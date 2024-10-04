@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/netcoreapp5.0/DDDNetCore.dll",
+            "program": "${workspaceFolder}/bin/Debug/netcoreapp5.0/Sem5Pi2425.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
