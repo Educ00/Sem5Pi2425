@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sem5Pi2425")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3579907abe14870f49e975cb7e2c0edb573365f7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aafe4b3e2cbe83bd63d42aafcf8b2b7bedce9eb1")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sem5Pi2425")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sem5Pi2425")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
