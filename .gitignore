@@ -486,8 +486,7 @@ $RECYCLE.BIN/
 
 # Binaries
 /bin/
-/obj/Debug/
-/obj/project.nuget.cache
+
 
 # Mac OS
 .DS_Store
