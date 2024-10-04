@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using DDDSample1.Domain.Categories;
-using DDDSample1.Domain.Products;
-using DDDSample1.Domain.Families;
-using DDDSample1.Infrastructure.Categories;
-using DDDSample1.Infrastructure.Products;
+using Sem5Pi2425.Domain.Categories;
+using Sem5Pi2425.Domain.Products;
+using Sem5Pi2425.Domain.Families;
+using Sem5Pi2425.Infrastructure.Categories;
+using Sem5Pi2425.Infrastructure.Products;
 
-namespace DDDSample1.Infrastructure
+namespace Sem5Pi2425.Infrastructure
 {
-    public class DDDSample1DbContext : DbContext
+    public class Sem5Pi2425DbContext : DbContext
     {
         public DbSet<Category> Categories { get; set; }
 
@@ -15,7 +15,7 @@ namespace DDDSample1.Infrastructure
 
         public DbSet<Family> Families { get; set; }
 
-        public DDDSample1DbContext(DbContextOptions options) : base(options)
+        public Sem5Pi2425DbContext(DbContextOptions options) : base(options)
         {
 
         }

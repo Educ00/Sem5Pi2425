@@ -1,6 +1,6 @@
 using System;
 
-namespace DDDSample1.Domain.Shared
+namespace Sem5Pi2425.Domain.Shared
 {
     public class BusinessRuleValidationException : Exception
     {

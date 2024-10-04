@@ -1,7 +1,7 @@
 using System;
 
 
-namespace DDDSample1.Domain.Families
+namespace Sem5Pi2425.Domain.Families
 {
     public class FamilyDto
     {

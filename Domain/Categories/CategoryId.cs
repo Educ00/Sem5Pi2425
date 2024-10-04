@@ -1,8 +1,8 @@
 using System;
-using DDDSample1.Domain.Shared;
+using Sem5Pi2425.Domain.Shared;
 using Newtonsoft.Json;
 
-namespace DDDSample1.Domain.Categories
+namespace Sem5Pi2425.Domain.Categories
 {
     public class CategoryId : EntityId
     {

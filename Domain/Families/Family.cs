@@ -1,6 +1,6 @@
-using DDDSample1.Domain.Shared;
+using Sem5Pi2425.Domain.Shared;
 
-namespace DDDSample1.Domain.Families
+namespace Sem5Pi2425.Domain.Families
 {
     public class Family : Entity<FamilyId>, IAggregateRoot
     {

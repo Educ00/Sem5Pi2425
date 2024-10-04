@@ -1,6 +1,6 @@
 using System;
 
-namespace DDDSample1.Domain.Categories
+namespace Sem5Pi2425.Domain.Categories
 {
     public class CategoryDto
     {

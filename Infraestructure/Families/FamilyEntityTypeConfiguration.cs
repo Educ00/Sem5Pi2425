@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using DDDSample1.Domain.Families;
+using Sem5Pi2425.Domain.Families;
 
-namespace DDDSample1.Infrastructure.Categories
+namespace Sem5Pi2425.Infrastructure.Categories
 {
     internal class FamilyEntityTypeConfiguration : IEntityTypeConfiguration<Family>
     {
         public void Configure(EntityTypeBuilder<Family> builder)
         {
-            //builder.ToTable("Families", SchemaNames.DDDSample1);
+            //builder.ToTable("Families", SchemaNames.Sem5Pi2425);
             builder.HasKey(b => b.Id);
             //builder.Property<bool>("_active").HasColumnName("Active");
         }
