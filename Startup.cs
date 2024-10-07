@@ -14,6 +14,8 @@ using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.Categories;
 using Sem5Pi2425.Domain.Products;
 using Sem5Pi2425.Domain.Families;
+using Sem5Pi2425.Domain.Users;
+using Sem5Pi2425.Infrastructure.Users;
 
 namespace Sem5Pi2425
 {
@@ -76,6 +78,9 @@ namespace Sem5Pi2425
 
             services.AddTransient<IFamilyRepository,FamilyRepository>();
             services.AddTransient<FamilyService>();
+
+            services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<UserService>();
         }
     }
 }
