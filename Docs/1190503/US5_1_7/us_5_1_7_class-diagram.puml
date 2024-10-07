@@ -1,0 +1,59 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+
+title Class Diagram - Patient Login Using External IAM
+
+class Patient {
+    +Id: long
+    +Name: string
+    +Email: string
+    +Appointments: List<Appointment>
+    +MedicalRecords: List<MedicalRecord>
+    +Login(IAMCredentials credentials): bool
+}
+
+class IAMService {
+    +Authenticate(IAMCredentials credentials): SessionToken
+}
+
+class IAMCredentials {
+    +Email: string
+    +Password: string
+}
+
+class SessionToken {
+    +Token: string
+    +Expiration: DateTime
+    +IsValid(): bool
+}
+
+class SessionManager {
+    +CreateSession(SessionToken token, Patient patient): Session
+    +InvalidateSession(): void
+}
+
+class Session {
+    +SessionID: string
+    +Patient: Patient
+    +CreatedAt: DateTime
+    +ExpiresAt: DateTime
+}
+
+class PatientService {
+    +FetchPatientData(long id): Patient
+}
+
+class PatientRepository {
+    +getPatient()
+}
+
+Patient --> SessionManager : uses
+IAMService --> SessionToken : returns
+SessionManager --> Session : creates
+Patient --> IAMService : authenticates with
+Patient --> PatientService : retrieves data from
+SessionToken --> Session : verifies
+PatientService --> PatientRepository : retrieves Patient
+
+@enduml

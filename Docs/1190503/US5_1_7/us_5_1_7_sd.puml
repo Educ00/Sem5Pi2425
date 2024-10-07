@@ -12,7 +12,7 @@ participant "LoginUI" as UI <<presentation>>
 participant "LoginController" as CTRL <<application>>
 participant "IAMService" as IAM <<service>>
 participant "SessionManager" as Session <<service>>
-participant "PatientDataService" as PatientService <<service>>
+participant "PatientService" as PatientService <<service>>
 participant "PatientRepository" as PatientRepository <<service>>
 
 activate Patient
