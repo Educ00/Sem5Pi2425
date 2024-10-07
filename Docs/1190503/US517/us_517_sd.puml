@@ -1,0 +1,54 @@
+@startuml
+
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title US 5.1.7 - Patient Login Using External IAM
+
+actor "Patient" as Patient
+participant "LoginUI" as UI <<presentation>>
+participant "LoginController" as CTRL <<application>>
+participant "IAMService" as IAM <<service>>
+participant "SessionManager" as Session <<service>>
+participant "PatientDataService" as PatientService <<service>>
+participant "PatientRepository" as PatientRepository <<service>>
+
+activate Patient
+
+    Patient -> UI : asks to login using IAM credentials
+    activate UI
+
+        UI -> CTRL : initiateLogin()
+        activate CTRL
+
+        CTRL -> IAM : authenticate(patient credentials)
+        activate IAM
+
+            IAM -> IAM : validate credentials
+            IAM --> CTRL : return session token
+        deactivate IAM
+
+        CTRL -> Session : createSession(token)
+        activate Session
+            Session -> PatientService : fetchPatientData()
+            activate PatientService
+            activate PatientRepository
+            PatientService -> PatientRepository : getPatient()
+            PatientRepository -> PatientService : returnPatient()
+            deactivate PatientRepository
+            PatientService --> Session : return patient data
+            deactivate PatientService
+        Session --> CTRL : session created with patient data
+        deactivate Session
+
+        CTRL --> UI : patient authenticated
+    deactivate CTRL
+
+    UI --> Patient : show patient dashboard (appointments, records)
+    deactivate UI
+
+@enduml
+
+@enduml
