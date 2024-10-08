@@ -1,0 +1,178 @@
+﻿@startuml
+title Domain Model
+
+hide empty methods
+hide empty attributes
+
+left to right direction
+
+
+
+package "systemUser" {
+        
+    entity User {}
+    
+    class FullName <<(V, lightblue)>> {}
+    
+    class Username <<(V, lightblue)>> {}
+    
+    class Password <<(V, lightblue)>> {}
+    
+    class Email <<(V, lightblue)>> {}
+    
+    enum Role <<(V, lightblue)>> {
+        Admin
+        Doctor
+        Patient
+        Nurse
+        Technician
+    }
+
+    User *-- FullName
+    User *-- Username
+    User *-- Password
+    User *-- Email
+    User *-- Role
+}
+
+package "admin" {
+    
+    entity Admin {}
+}
+
+package "staff" {
+
+    entity Staff {}
+    
+    class UniqueIdentifier <<(V, lightblue)>> {}
+    
+    class Specialization <<(V, lightblue)>> {}
+    
+    class AvailableSlots <<(V, lightblue)>> {}
+    
+    Staff *-- UniqueIdentifier
+    Staff *-- Specialization
+    Staff *-- AvailableSlots
+  
+}
+
+package "doctor" {
+    
+    entity Doctor {}
+}
+
+package "nurse" {
+    
+    entity Nurse {}
+}
+
+package "technician" {
+    
+    entity Technician {}
+}
+
+package "patient" {
+
+    entity Patient {}
+    
+    class MedicalConditions <<(V, lightblue)>> {}
+    
+    class EmergencyContact <<(V, lightblue)>> {}
+    
+    class AppoitmentHistory <<(V, lightblue)>> {}
+    
+    class MedicalRecordsNumber <<(V, lightblue)>> {}
+    
+    class Gender <<(V, lightblue)>> {}
+    
+    class DateOfBirth <<(V, lightblue)>> {}
+    
+    Patient *-- MedicalConditions
+    Patient *-- EmergencyContact
+    Patient *-- AppoitmentHistory
+    Patient *-- MedicalRecordsNumber
+    Patient *-- Gender
+    Patient *-- DateOfBirth
+}
+
+package "operation request" {
+
+    entity OperationRequest {}
+    
+    class Priority <<(V, lightblue)>> {}
+    
+    class Deadline <<(V, lightblue)>> {}
+    
+    OperationRequest *-- Priority
+    OperationRequest *-- Deadline
+}
+
+package "operation type" {
+    
+        entity OperationType {}
+        
+        class Name <<(V, lightblue)>> {}
+        
+        class Duration <<(V, lightblue)>> {}
+        
+        OperationType *-- Name
+        OperationType *-- Description
+        OperationType *-- Duration
+}
+
+package "apointment" {
+    
+    entity Appointment {}
+    
+    class Date <<(V, lightblue)>> {}
+    
+    class Status <<(V, lightblue)>> {}
+    
+    Appointment *-- Date
+    Appointment *-- Time
+    Appointment *-- Status
+}
+
+package "surgery room" {
+
+    entity SurgeryRoom {}
+    
+    class RoomNumber <<(V, lightblue)>> {}
+    
+    class RoomType <<(V, lightblue)>> {}
+    
+    class CurrentStatus <<(V, lightblue)>> {}
+    
+    class AssignedEquipment <<(V, lightblue)>> {}
+    
+    class Capacity <<(V, lightblue)>> {}
+    
+    SurgeryRoom *-- RoomNumber
+    SurgeryRoom *-- RoomType
+    SurgeryRoom *-- CurrentStatus
+    SurgeryRoom *-- AssignedEquipment
+    SurgeryRoom *-- Capacity
+    
+}
+
+User <|---- Staff
+User <|- Patient
+User <|- Admin
+
+Staff <|- Doctor
+Staff <|- Nurse
+Staff <|-- Technician
+
+Appointment <|-- SurgeryRoom
+
+OperationType --* OperationRequest
+OperationType o--- "0..*"Staff
+
+Appointment --o "1..*" Staff
+Appointment ----* OperationRequest
+
+OperationRequest <-- Doctor : requests
+
+Patient "1" <------- "1" OperationRequest : for
+
+@enduml
