@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Sem5Pi2425.Domain.Users;
+using Sem5Pi2425.Domain.SystemUser;
 
-namespace Sem5Pi2425.Infrastructure.Users {
+namespace Sem5Pi2425.Infraestructure.Users {
     public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User> {
 
         public void Configure(EntityTypeBuilder<User> builder) {

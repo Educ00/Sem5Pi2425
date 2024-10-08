@@ -14,8 +14,8 @@ using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.Categories;
 using Sem5Pi2425.Domain.Products;
 using Sem5Pi2425.Domain.Families;
-using Sem5Pi2425.Domain.Users;
-using Sem5Pi2425.Infrastructure.Users;
+using Sem5Pi2425.Domain.SystemUser;
+using Sem5Pi2425.Infraestructure.Users;
 
 namespace Sem5Pi2425
 {

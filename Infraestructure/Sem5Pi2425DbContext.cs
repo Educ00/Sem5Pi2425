@@ -2,10 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Sem5Pi2425.Domain.Categories;
 using Sem5Pi2425.Domain.Products;
 using Sem5Pi2425.Domain.Families;
-using Sem5Pi2425.Domain.Users;
+using Sem5Pi2425.Domain.SystemUser;
+using Sem5Pi2425.Infraestructure.Users;
 using Sem5Pi2425.Infrastructure.Categories;
 using Sem5Pi2425.Infrastructure.Products;
-using Sem5Pi2425.Infrastructure.Users;
 
 namespace Sem5Pi2425.Infrastructure
 {
@@ -19,9 +19,7 @@ namespace Sem5Pi2425.Infrastructure
         
         public DbSet<User> Users { get; set; }
 
-        public Sem5Pi2425DbContext(DbContextOptions options) : base(options)
-        {
-
+        public Sem5Pi2425DbContext(DbContextOptions options) : base(options) {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,7 +1,7 @@
 using System;
 using Sem5Pi2425.Domain.Shared;
 
-namespace Sem5Pi2425.Domain.Users {
+namespace Sem5Pi2425.Domain.SystemUser {
     public class User : Entity<UserId>, IAggregateRoot {
         public bool Active { get; private set; }
 
@@ -19,8 +19,8 @@ namespace Sem5Pi2425.Domain.Users {
 
         protected User() { }
 
-        public User(Username username, Email email, FullName fullName, PhoneNumber phoneNumber, Role role) {
-            this.Id = new UserId(Guid.NewGuid());
+        public User(UserId userId, Username username, Email email, FullName fullName, PhoneNumber phoneNumber, Role role) {
+            this.Id = userId;
             this.Active = true;
             this.Username = username;
             this.Email = email;

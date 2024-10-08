@@ -1,9 +1,6 @@
-﻿using System;
-using Newtonsoft.Json;
-
-namespace Sem5Pi2425.Domain.Users {
+﻿namespace Sem5Pi2425.Domain.SystemUser {
     public class UserDto {
-        public Guid Id { get; set; }
+        public UserId Id { get; set; }
         public bool Active { get; set; }
         public Username Username { get; set; }
         public Email Email { get; set; }
@@ -13,7 +10,7 @@ namespace Sem5Pi2425.Domain.Users {
 
         public UserDto(User user)
         {
-            new UserDto(user.Id.AsGuid(), user.Active, user.Username, user.Email, user.FullName, user.PhoneNumber, user.Role);
+            new UserDto(user.Id, user.Active, user.Username, user.Email, user.FullName, user.PhoneNumber, user.Role);
         }
         
         // Não sei ao certo o porquê, mas este dá com este post:
@@ -35,6 +32,7 @@ namespace Sem5Pi2425.Domain.Users {
             "role": "Admin"
         }
         */
+        /*
         [JsonConstructor]
         public UserDto(bool active, Username username, Email email, FullName fullName, PhoneNumber phoneNumber, Role role) {
             Id = new Guid();
@@ -45,8 +43,9 @@ namespace Sem5Pi2425.Domain.Users {
             PhoneNumber = phoneNumber;
             Role = role;
         }
+        */
         
-        public UserDto(Guid id, bool active, Username username, Email email, FullName fullName, PhoneNumber phoneNumber, Role role) {
+        public UserDto(UserId id, bool active, Username username, Email email, FullName fullName, PhoneNumber phoneNumber, Role role) {
             Id = id;
             Active = active;
             Username = username;

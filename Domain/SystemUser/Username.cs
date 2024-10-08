@@ -1,7 +1,7 @@
 ﻿using System;
 using Sem5Pi2425.Domain.Shared;
 
-namespace Sem5Pi2425.Domain.Users {
+namespace Sem5Pi2425.Domain.SystemUser {
     public class Username : IValueObject{
         public string value {
             get;
