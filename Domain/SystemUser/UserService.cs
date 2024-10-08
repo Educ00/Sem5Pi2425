@@ -92,5 +92,21 @@ namespace Sem5Pi2425.Domain.SystemUser {
             return new UserDto(user.Id, user.Active, user.Username, user.Email, user.FullName, user.PhoneNumber,
                 user.Role);
         }
+
+        // TODO: Add some encryption to the password
+        public async Task<UserDto> ResetPassword(UserId userId, string password) {
+            var user = await this._repo.GetByIdAsync(userId);
+
+            if (user == null) {
+                return null;
+            }
+
+            user.ChangePassword(password);
+
+            await this._unitOfWork.CommitAsync();
+
+            return new UserDto(user.Id, user.Active, user.Username, user.Email, user.FullName, user.PhoneNumber,
+                user.Role);
+        }
     }
 }

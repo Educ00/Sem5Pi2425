@@ -40,5 +40,9 @@ namespace Sem5Pi2425.Domain.SystemUser {
         public void MarkAsActive() {
             this.Active = true;
         }
+
+        public void ChangePassword(string password) {
+            this.Password = new Password(password);
+        }
     }
 }
