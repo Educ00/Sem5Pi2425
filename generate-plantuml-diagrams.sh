@@ -28,7 +28,7 @@ do
   file=$(echo $aFile | cut -d "/" -f 3)
   echo " >> Output file: ./$out/$file.$exportFormat"
 
-	java -jar libs/plantuml-1.2023.1.jar $extra -t$exportFormat $aFile -o$out
+	java -jar libs/plantuml-1.2024.7.jar $extra -t$exportFormat $aFile -o$out
 done
 
 echo "Finished"
