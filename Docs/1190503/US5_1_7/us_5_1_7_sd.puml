@@ -1,6 +1,4 @@
 @startuml
-
-@startuml
 skinparam monochrome true
 skinparam packageStyle rectangle
 skinparam shadowing false
@@ -13,7 +11,7 @@ participant "LoginController" as CTRL <<application>>
 participant "IAMService" as IAM <<service>>
 participant "SessionManager" as Session <<service>>
 participant "PatientService" as PatientService <<service>>
-participant "PatientRepository" as PatientRepository <<service>>
+participant "UserRepository" as UserRepository <<service>>
 
 activate Patient
 
@@ -34,10 +32,10 @@ activate Patient
         activate Session
             Session -> PatientService : fetchPatientData()
             activate PatientService
-            activate PatientRepository
-            PatientService -> PatientRepository : getPatient()
-            PatientRepository -> PatientService : returnPatient()
-            deactivate PatientRepository
+            activate UserRepository
+            PatientService -> UserRepository : getPatient()
+            UserRepository -> PatientService : returnPatient()
+            deactivate UserRepository
             PatientService --> Session : return patient data
             deactivate PatientService
         Session --> CTRL : session created with patient data
@@ -48,7 +46,5 @@ activate Patient
 
     UI --> Patient : show patient dashboard (appointments, records)
     deactivate UI
-
-@enduml
 
 @enduml

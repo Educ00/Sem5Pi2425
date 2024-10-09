@@ -1,0 +1,53 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title US 5.1.8 - Admin creates a new Patient, so that he can register his/hers personal details and medical history.
+
+actor "Admin" as Admin
+participant "PatientUI" as UI <<UI>>
+participant "PatientController" as Controller <<controller>>
+entity "PatientCreateDTO" as CreateDTO <<dto>>
+participant "PatientService" as Service <<service>>
+participant "UserRepository" as Repo <<repository>>
+
+
+activate Admin
+    Admin -> UI : asks to create a Patient
+    deactivate Admin
+    activate UI
+            UI -> Admin : sends the form to insert Patient informations
+    deactivate UI
+    activate Admin
+            Admin -> UI : inserts the information
+            deactivate Admin
+    activate UI
+UI -> Controller: demands for patient creation (POST)
+deactivate UI
+activate Controller
+    Controller -> CreateDTO: instantiates PatientCreateDTO
+    Controller -> Service: CreatePatient(CreateDTO)
+    deactivate Controller
+    activate Service
+
+        Service -> Repo: checks if email and number are unique
+        activate Repo
+        Repo --> Service: Returns if email/phone number are in use
+        deactivate Repo
+
+        Service -> Repo: Creates newPatient()
+        activate Repo
+        Repo --> Service: return created Patient with Medical Number
+        deactivate Repo
+        Service --> Controller : ReturnsPatient
+        deactivate Service
+        activate Controller
+        
+        
+Controller --> UI: returns patient data
+activate UI
+UI->Admin : shows success
+deactivate Controller
+
+@enduml

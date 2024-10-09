@@ -1,0 +1,50 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title 5.1.8 - Admin wants to edit a profile, so that he can update their information when needed.
+actor "Admin" as Admin
+participant "PatientController" as Controller <<controller>>
+entity "PatientDTO" as DTO <<dto>>
+participant "PatientService" as Service <<service>>
+participant "PatientRepository" as Repo <<repository>>
+
+
+Admin -> Controller: Request patient profile to edit (id)
+activate Controller
+
+    Controller -> Service: GetPatientById(id)
+    Controller -> DTO: instatiates patientDTO()
+    activate Service
+
+        Service -> Repo: Fetch patient profile by ID
+        activate Repo
+        Repo --> Service: Return DTO
+        deactivate Repo
+
+    Service --> Controller: Return DTO
+    deactivate Service
+
+Controller --> Admin: Display DTO
+Admin -> Controller: Submit updated patient data (PatientDTO)
+activate Controller
+
+    Controller -> Service: UpdatePatient(PatientDTO)
+    activate Service
+
+        Service -> Repo: Update patient in database (PatientDTO)
+        activate Repo
+        Repo --> Service: Return updated DTO
+        deactivate Repo
+
+        Service -> Service: Log profile changes (internally)
+        Service -> Service: Notify patient if contact info changed (internally)
+
+    Service --> Controller: Return updated DTO
+    deactivate Service
+
+Controller --> Admin: Display updated DTO
+deactivate Controller
+
+@enduml
