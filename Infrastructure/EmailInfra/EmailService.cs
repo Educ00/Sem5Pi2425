@@ -17,24 +17,16 @@ namespace Sem5Pi2425.Infrastructure.EmailInfra {
 
         private bool TryConfigureSmtpClient() {
             try {
-                var host = _configuration["Email:SmtpHost"];
-                var port = int.Parse(_configuration["Email:Port"]);
-                var username = _configuration["Email:Username"];
-                var password = _configuration["Email:Password"];
-                var useSSL = port != 25; // Assume SSL for ports other than 25
-
-                if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) {
-                    Console.WriteLine("Email configuration is incomplete. Check your appsettings.json file.");
-                    return false;
-                }
+                var host = _configuration["Email:SmtpHost"] ?? "frodo.dei.isep.ipp.pt";
+                var port = int.Parse(_configuration["Email:Port"] ?? "25");
+                var useSsl = port != 25; // Assume SSL for ports other than 25
 
                 _smtpClient = new SmtpClient(host, port) {
-                    Credentials = new NetworkCredential(username, password),
-                    EnableSsl = useSSL,
+                    EnableSsl = useSsl,
                     DeliveryMethod = SmtpDeliveryMethod.Network
                 };
 
-                Console.WriteLine($"SMTP client configured. Host: {host}, Port: {port}, UseSSL: {useSSL}");
+                Console.WriteLine($"SMTP client configured. Host: {host}, Port: {port}, UseSSL: {useSsl}");
                 return true;
             }
             catch (Exception ex) {
@@ -43,40 +35,62 @@ namespace Sem5Pi2425.Infrastructure.EmailInfra {
             }
         }
 
-        public async Task SendActivationEmailAsync(string email, string activationToken) {
+        public async Task SendEmailAsync(string to, string from, string subject, string body) {
             if (!_isConfigured) {
-                Console.WriteLine($"Activation email not sent to {email}. Email service is not configured.");
+                Console.WriteLine($"Email not sent to {to}. Email service is not configured.");
                 return;
             }
 
-            var activationLink = $"{_configuration["AppUrl"]}/activate?token={activationToken}";
-
             var mailMessage = new MailMessage {
-                From = new MailAddress(_configuration["Email:FromAddress"]),
-                Subject = "Activate Your Account",
-                Body = GetActivationEmailTemplate(activationLink),
+                From = new MailAddress(from),
+                Subject = subject,
+                Body = body,
                 IsBodyHtml = true
             };
 
-            mailMessage.To.Add(email);
+            mailMessage.To.Add(to);
 
             try {
-                Console.WriteLine($"Attempting to send activation email to {email}");
+                Console.WriteLine($"Attempting to send email to {to}");
                 await _smtpClient.SendMailAsync(mailMessage);
-                Console.WriteLine($"Activation email sent successfully to {email}");
+                Console.WriteLine($"Email sent successfully to {to}");
             }
             catch (Exception ex) {
-                Console.WriteLine($"Failed to send activation email: {ex.Message}");
+                Console.WriteLine($"Failed to send email: {ex.Message}");
                 Console.WriteLine($"StackTrace: {ex.StackTrace}");
                 throw;
             }
         }
 
-        public Task SendConfirmationEmailAsync(string email) {
-            throw new NotImplementedException();
+        public async Task SendActivationEmailAsync(string email, string activationToken) {
+            var activationLink = $"{_configuration["AppUrl"]}/api/Users/activate?token={activationToken}";
+            var subject = "Activate Your Account";
+            var body = GetActivationEmailTemplate(activationLink);
+            var fromAddress = _configuration["Email:FromAddress"];
+
+            await SendEmailAsync(email, fromAddress, subject, body);
         }
 
-        // ... other methods ...
+        public async Task SendConfirmationEmailAsync(string email) {
+            var subject = "Account Activated Successfully";
+            var body = GetConfirmationEmailTemplate();
+            var fromAddress = _configuration["Email:FromAddress"];
+
+            await SendEmailAsync(email, fromAddress, subject, body);
+        }
+
+        private string GetConfirmationEmailTemplate() {
+            return $@"
+                <html>
+                <body>
+                    <h2>Welcome to Our System</h2>
+                    <p>Your account has been successfully activated!</p>
+                    <p>You can now log in and start using our services.</p>
+                    <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+                    <p>Thank you for joining us!</p>
+                </body>
+                </html>";
+        }
 
         private string GetActivationEmailTemplate(string activationLink) {
             return $@"

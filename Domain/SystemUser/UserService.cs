@@ -67,17 +67,21 @@ namespace Sem5Pi2425.Domain.SystemUser {
                 user.Role);
         }
 
-        public async Task<UserDto> ActivateUserAsync(string token, string password) {
-            
-            Password.IsPasswordStrong(password);
+        public async Task<UserDto> ActivateUserAsync(ActivateUserDto dto) {
 
-            var user = await _repo.GetByActivationTokenAsync(token);
+            if (dto.Password != dto.ConfirmPassword) {
+                throw new BusinessRuleValidationException("Passwords do not match");
+            }
+            
+            Password.IsPasswordStrong(dto.Password);
+
+            var user = await _repo.GetByActivationTokenAsync(dto.Token);
 
             if (user == null || user.ActivationTokenExpiry < DateTime.UtcNow) {
                 throw new BusinessRuleValidationException("Invalid or expired token");
             }
             
-            user.SetPassword(password);
+            user.SetPassword(dto.Password);
             
             await _unitOfWork.CommitAsync();
 

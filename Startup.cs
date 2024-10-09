@@ -27,7 +27,7 @@ namespace Sem5Pi2425 {
                 opt.UseInMemoryDatabase("Sem5Pi2425DB")
                 .ReplaceService<IValueConverterSelector, StronglyEntityIdValueConverterSelector>());
 
-            services.AddTransient<IEmailService, DevelopmentEmailService>();
+            services.AddTransient<IEmailService, EmailService>();
 
             ConfigureMyServices(services);
             
@@ -46,7 +46,7 @@ namespace Sem5Pi2425 {
             }
 
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles();
             app.UseRouting();
 
             app.UseAuthorization();

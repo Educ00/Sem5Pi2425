@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUser;
@@ -11,9 +13,11 @@ namespace Sem5Pi2425.Controllers {
     [ApiController]
     public class UsersController : ControllerBase {
         private readonly UserService _service;
-        
-        public UsersController(UserService service) {
+        private readonly IWebHostEnvironment _environment;
+
+        public UsersController(UserService service, IWebHostEnvironment environment) {
             this._service = service;
+            this._environment = environment;
         }
         
         // GET: api/Users
@@ -85,14 +89,23 @@ namespace Sem5Pi2425.Controllers {
             }
         }
         
+        // GET: api/Users/activate
+        [HttpGet("activate")]
+        [AllowAnonymous]
+        public IActionResult ActivateUserPage([FromQuery] string token)
+        {
+            var path = Path.Combine(_environment.WebRootPath, "activate.html");
+            return PhysicalFile(path, "text/html");
+        }
+        
         // Activate: api/Users
         [HttpPost("activate")]
         [AllowAnonymous]
-        public async Task<ActionResult<UserDto>> ActivateUser([FromQuery] string token, [FromBody] ActivateUserDto dto)
+        public async Task<ActionResult<UserDto>> ActivateUser([FromBody] ActivateUserDto dto)
         {
             try
             {
-                var user = await _service.ActivateUserAsync(token, dto.Password);
+                var user = await _service.ActivateUserAsync(dto);
                 return Ok(user);
             }
             catch (BusinessRuleValidationException e)
