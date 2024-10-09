@@ -5,10 +5,7 @@ using Sem5Pi2425.Domain.Shared;
 namespace Sem5Pi2425.Domain.SystemUser;
 
 public class PhoneNumber : IValueObject {
-    public string Value {
-        get;
-        private set;
-    }
+    public string Value { get; private set; }
 
     protected PhoneNumber() {}
 
@@ -21,4 +18,6 @@ public class PhoneNumber : IValueObject {
         }
         this.Value = value;
     }
+
+    public override string ToString() => Value;
 }

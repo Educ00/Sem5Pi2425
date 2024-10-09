@@ -21,12 +21,8 @@ namespace Sem5Pi2425.Domain.SystemUser {
             this.Value = value;
         }
         private bool IsValidEmail(string email) {
-            if (email == null) {
-                throw new ArgumentException("Email cannot be null");
-            }
-            
             if (string.IsNullOrWhiteSpace(email)) {
-                throw new ArgumentException("Email cannot be blank");
+                throw new ArgumentException("Email cannot be null or blank");
             }
 
             try {
@@ -37,5 +33,10 @@ namespace Sem5Pi2425.Domain.SystemUser {
                 throw;
             }
         }
+
+        public override string ToString() => Value;
+
+        public static implicit operator string(Email email) => email.Value;
+        public static explicit operator Email(string email) => new Email(email);
     }
 }
