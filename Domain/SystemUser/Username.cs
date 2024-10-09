@@ -3,7 +3,7 @@ using Sem5Pi2425.Domain.Shared;
 
 namespace Sem5Pi2425.Domain.SystemUser {
     public class Username : IValueObject{
-        public string value {
+        public string Value {
             get;
             private set;
         }
@@ -13,7 +13,7 @@ namespace Sem5Pi2425.Domain.SystemUser {
             if (string.IsNullOrWhiteSpace(value)) {
                 throw new ArgumentException("Username cannot be empty");
             }
-            this.value = value;
+            this.Value = value;
         }
     }
 }
