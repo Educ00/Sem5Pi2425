@@ -3,7 +3,7 @@ skinparam monochrome true
 skinparam packageStyle rectangle
 skinparam shadowing false
 
-title 5.1.12 As an Admin, I want to create a new staff profile, so that I can add them to the hospital’s roster.
+title 5.1.21 As an Admin, I want to edit existing operation types, so that I can update or correct information about the procedure.
 
 
 autonumber
@@ -11,22 +11,17 @@ actor "Admin" as ADMIN
 
 participant "<<System>> \nSystem" as System
 
-    ADMIN -> System : selects to create a new staff profile
+    ADMIN -> System : selects to edit an operation 
     activate System
 
-    System --> ADMIN : ask the information to create a new staff
+    System --> ADMIN : ask the information to edit an operation
     deactivate System
 
     ADMIN -> System : types the information
     activate System
 
-    System --> ADMIN : asks if it wants to add it to the roster
-    deactivate System
-    
-    ADMIN -> System : types yes/no
-    activate System
-
     System --> ADMIN : message success
     deactivate System    
 
+    
 @enduml
