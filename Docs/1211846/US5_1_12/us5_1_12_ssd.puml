@@ -1,0 +1,32 @@
+﻿@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title 5.1.12 As an Admin, I want to create a new staff profile, so that I can add them to the hospital’s roster.
+
+
+autonumber
+actor "Admin" as ADMIN
+
+participant "<<System>> \nSystem" as System
+
+    ADMIN -> System : selects to create a new staff profile
+    activate System
+
+    System --> ADMIN : ask the information to create a new staff
+    deactivate System
+
+    ADMIN -> System : types the information
+    activate System
+
+    System --> ADMIN : asks if it wants to add it to the roster
+    deactivate System
+    
+    ADMIN -> System : types yes/no
+    activate System
+
+    System --> ADMIN : message success
+    deactivate System    
+
+@enduml

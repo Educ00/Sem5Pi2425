@@ -4,7 +4,7 @@
 skinparam monochrome true
 skinparam shadowing false
 
-title Class Diagram - As an Admin, I want to create a new staff profile, so that I can add them to the hospital’s roster.
+title Class Diagram - As an Admin, I want to add new types of operations, so that I can reflect the available medical procedures in the system.
 
 class Admin{
 
