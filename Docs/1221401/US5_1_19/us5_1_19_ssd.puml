@@ -1,0 +1,29 @@
+﻿@startuml
+
+title US 5.1.19 - As Doctor,  I want to list/search operation requisitions
+
+
+autonumber
+actor "Doctor" as Doctor
+
+participant "<<System>> \nSystem" as System
+
+    Doctor -> System : requests to list operation requests
+    activate System
+
+    System --> Doctor : displays list of operation requests
+    deactivate System
+
+    Doctor -> System : selects filter
+    activate System
+    
+    System --> Doctor : displays list of operation requests filtered
+    deactivate System    
+    
+    Doctor -> System : selects operation request
+    activate System
+    
+    System --> Doctor : displays option to view, update or delete
+    deactivate System    
+
+@enduml

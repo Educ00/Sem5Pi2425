@@ -1,0 +1,29 @@
+﻿@startuml
+
+title US 5.1.23 - As Admin, I want to list/search operation types
+
+
+autonumber
+actor "Admin" as Admin
+
+participant "<<System>> \nSystem" as System
+
+    Admin -> System : requests to list operation types
+    activate System
+
+    System --> Admin : displays list of operation types
+    deactivate System
+
+    Admin -> System : selects filter
+    activate System
+    
+    System --> Admin : displays list of operation types filtered
+    deactivate System    
+    
+    Admin -> System : selects operation type
+    activate System
+    
+    System --> Admin : displays option to view, edit or deactivate
+    deactivate System    
+
+@enduml

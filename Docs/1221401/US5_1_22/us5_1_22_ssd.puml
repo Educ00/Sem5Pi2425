@@ -1,0 +1,29 @@
+﻿@startuml
+
+title US 5.1.22 - As Admin, I want to remove obsolete or no longer performed operation types
+
+
+autonumber
+actor "Admin" as Admin
+
+participant "<<System>> \nSystem" as System
+
+    Admin -> System : requests to list operation types
+    activate System
+
+    System --> Admin : shows list of operation types
+    deactivate System
+
+    Admin -> System : selects operation type to inactive
+    activate System
+    
+    System --> Admin : displays confirmation prompt
+    deactivate System    
+    
+    Admin -> System : types yes or no
+    activate System
+    
+    System --> Admin : updates operation types
+    deactivate System    
+
+@enduml
