@@ -1,0 +1,29 @@
+﻿@startuml
+
+title US 5.1.17 - As Doctor, I want to update an operation requisition
+
+
+autonumber
+actor "Doctor" as Doctor
+
+participant "<<System>> \nSystem" as System
+
+    Doctor -> System : requests an operation update
+    activate System
+
+    System --> Doctor : asks to select operation request
+    deactivate System
+
+    Doctor -> System : selects operation request
+    activate System
+    
+    System --> Doctor : asks what wants to update
+    deactivate System    
+    
+    Doctor -> System : selects attribute to update
+    activate System
+    
+    System --> Doctor : updates operation request
+    deactivate System
+
+@enduml

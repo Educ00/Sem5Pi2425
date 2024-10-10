@@ -1,0 +1,29 @@
+﻿@startuml
+
+title US 5.1.18 - As Doctor, I want to remove an operation requisition
+
+
+autonumber
+actor "Doctor" as Doctor
+
+participant "<<System>> \nSystem" as System
+
+    Doctor -> System : requests an operation update
+    activate System
+
+    System --> Doctor : asks to select operation request
+    deactivate System
+
+    Doctor -> System : selects operation request
+    activate System
+    
+    System --> Doctor : displays confirmation prompt
+    deactivate System    
+    
+    Doctor -> System : types yes or no
+    activate System
+    
+    System --> Doctor : successful message
+    deactivate System    
+
+@enduml

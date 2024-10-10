@@ -1,0 +1,41 @@
+﻿@startuml
+
+title US 5.1.16 - As Doctor, I want to request an operation
+
+
+autonumber
+actor "Doctor" as Doctor
+
+participant "<<System>> \nSystem" as System
+
+    Doctor -> System : requests an operation
+    activate System
+
+    System --> Doctor : asks to select patient
+    deactivate System
+
+    Doctor -> System : selects patient
+    activate System
+
+    System --> Doctor : asks operation type
+    deactivate System
+    
+    Doctor -> System : selects operation type
+    activate System
+
+    System --> Doctor : asks operation's priority
+    deactivate System    
+    
+    Doctor -> System : selects operation's priority
+    activate System
+    
+    System --> Doctor : asks suggested deadline
+    deactivate System    
+    
+    Doctor -> System : selects suggested deadline
+    activate System
+    
+    System --> Doctor : message with successful submission 
+    deactivate System
+
+@enduml
