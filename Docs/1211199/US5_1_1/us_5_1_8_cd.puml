@@ -1,0 +1,131 @@
+﻿@startuml
+
+    class User {
+        +Email email
+        +FullName fullName
+        +Role role
+        +PhoneNumber phoneNumber
+        +bool active
+        +Username username
+        +Password password
+        +string activationToken
+        +DateTime? activationTokenExpiry
+        #User()
+        +User(UserId, Username, Email, FullName, PhoneNumber, Role)
+        +CreateBackofficeUser(CreateBackofficeUserDto) User
+        -SetBackofficeRoleFromString(string) Role
+        +SetPassword(string) void
+        +ChangePassword(string) void
+        +MarkAsActive() void
+        +MarkAsInactive() void
+    }
+    class Email {
+        +string Value
+        #Email()
+        +Email(string)
+        -IsValidEmail(string) bool
+        +ToString() string
+    }
+    class FullName {
+        +string Value
+        #FullName()
+        +FullName(string)
+        +FirstName() string
+        +LastName() string
+        +ToString() string
+    }
+    class Password {
+        +string Value
+        #Password()
+        +Password(string)
+        +IsPasswordStrong(string) bool$
+    }
+    class PhoneNumber {
+        +string Value
+        #PhoneNumber()
+        +PhoneNumber(string)
+        +ToString() string
+    }
+    class Role {
+        <<enumeration>>
+        admin
+        doctor
+        nurse
+        technician
+        patient
+    }
+    class UserDto {
+        +UserId Id
+        +bool Active
+        +Username Username
+        +Email Email
+        +FullName FullName
+        +PhoneNumber PhoneNumber
+        +Role Role
+        +UserDto(User)
+        +UserDto(UserId, bool, Username, Email, FullName, PhoneNumber, Role)
+    }
+    class ActivateUserDto {
+        +string Password
+        +string ConfirmPassword
+    }
+    class CreateBackofficeUserDto {
+        +string Username
+        +string Email
+        +string FullName
+        +string PhoneNumber
+        +string Role
+    }
+    class UserId {
+        +UserId(string)
+        #createFromString(string) object
+        +AsString() string
+        +NewUserId() UserId$
+    }
+    class Username {
+        +string Value
+        #Username()
+        +Username(string)
+    }
+    class UserService {
+        -IUnitOfWork unitOfWork
+        -IUserRepository repo
+        -IEmailService emailService
+        +UserService(IUnitOfWork, IUserRepository, IEmailService)
+        +GetAllUsersAsync() Task~List~UserDto~~
+        +GetUserByIdAsync(UserId) Task~ActionResult~UserDto~~
+        +AddUserAsync(UserDto) Task~ActionResult~UserDto~~
+        +InactivateUserAsync(UserId) Task~UserDto~
+        +ActivateUserAsync(string, string) Task~UserDto~
+        +DeleteUserAsync(UserId) Task~UserDto~
+        +ResetPassword(UserId, string) Task~UserDto~
+        +CreateBackofficeUserAsync(CreateBackofficeUserDto) Task~UserDto~
+        -IsValidBackofficeRole(string) bool
+    }
+    class IUserRepository {
+        +GetByEmailAsync(Email) Task~User~
+        +GetByActivationTokenAsync(string) Task~User~
+    }
+    class IRepository {
+        <<interface>>
+        +GetAllAsync() Task~List~TEntity~~
+        +GetByIdAsync(TEntityId) Task~TEntity~
+        +GetByIdsAsync(List~TEntityId~) Task~List~TEntity~~
+        +AddAsync(TEntity) Task~TEntity~
+        +Remove(TEntity) void
+    }
+    
+    User *-- Email
+    User *-- FullName
+    User *-- PhoneNumber
+    User *-- Role
+    User *-- Username
+    User *-- Password
+    User *-- UserId
+    IUserRepository --|> IRepository
+    UserService --> IUserRepository
+    UserService --> IUnitOfWork
+    UserService --> IEmailService
+    UserDto --* User
+    
+@enduml
