@@ -1,0 +1,48 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title Sequence Diagram - List/Search Patient Profiles (US 5.1.11 - One DTO and One Service)
+
+actor "Admin" as Admin
+participant "PatientController" as Controller <<controller>>
+participant "PatientService" as Service <<service>>
+participant "PatientRepository" as Repo <<repository>>
+entity "PatientDTO" as PatientDTO <<dto>>
+
+Admin -> Controller: Request to search patient profiles (search attributes)
+activate Controller
+
+    Controller -> Service: SearchPatients(search attributes)
+    activate Service
+
+        Service -> Repo: Search for patients by criteria (name, email, etc.)
+        Controller -> PatientDTO : Instantiates DTO()
+        activate Repo
+        Repo --> Service: Return list of PatientDTO (paginated)
+        deactivate Repo
+
+    Service --> Controller: Return list of PatientDTO (key patient info)
+    deactivate Service
+
+Controller --> Admin: Display list of PatientDTO (List view with key patient info)
+
+Admin -> Controller: Select a patient profile to view/edit/delete
+activate Controller
+
+    Controller -> Service: GetPatientById(id)
+    activate Service
+
+        Service -> Repo: Fetch patient profile by ID
+        activate Repo
+        Repo --> Service: Return full PatientDTO
+        deactivate Repo
+
+    Service --> Controller: Return full PatientDTO
+    deactivate Service
+
+Controller --> Admin: Display full PatientDTO
+deactivate Controller
+
+@enduml

@@ -1,0 +1,54 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title Sequence Diagram - Delete Patient Profile (US 5.1.10)
+
+actor "Admin" as Admin
+participant "PatientController" as Controller <<controller>>
+participant "PatientService" as Service <<service>>
+participant "PatientRepository" as Repo <<repository>>
+entity "PatientDTO" as PatientDTO <<dto>>
+
+Admin -> Controller: Request to delete patient profile (id)
+activate Controller
+
+    Controller -> Service: GetPatientById(id)
+    activate Service
+
+        Service -> Repo: Fetch patient profile by ID
+        activate Repo
+        Controller -> PatientDTO : instatiates DTO()
+        Repo --> Service: Return PatientDTO
+        deactivate Repo
+
+    Service --> Controller: Return PatientDTO
+    deactivate Service
+
+Controller -> Admin: Prompt confirmation to delete profile
+Admin -> Controller: Confirm deletion
+activate Controller
+
+    Controller -> Service: DeletePatient(id)
+    activate Service
+
+        Service -> Repo: Mark patient for deletion
+        activate Repo
+        Repo --> Service: Patient marked for deletion
+        deactivate Repo
+
+        Service -> Repo: Permanently delete patient profile (within time frame)
+        activate Repo
+        Repo --> Service: Patient data deleted
+        deactivate Repo
+
+        Service -> Service: Log deletion for audit/GDPR purposes
+
+    Service --> Controller: Deletion confirmed
+    deactivate Service
+
+Controller --> Admin: Notify admin of successful deletion
+deactivate Controller
+
+@enduml

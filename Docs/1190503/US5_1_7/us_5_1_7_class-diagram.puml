@@ -5,13 +5,14 @@ skinparam shadowing false
 title Class Diagram - Patient Login Using External IAM
 
 class Patient {
-    +Id: long
-    +Name: string
-    +Email: string
-    +Appointments: List<Appointment>
-    +MedicalRecords: List<MedicalRecord>
-    +Login(IAMCredentials credentials): bool
-}
+    +isActive : bool
+    +username : Username
+    +email : Email
+    +fullName : FullName
+    +phoneNumber : PhoneNumber
+    +role : Role
+    +password : Password
+}   
 
 class IAMService {
     +Authenticate(IAMCredentials credentials): SessionToken

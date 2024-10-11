@@ -1,0 +1,10 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+
+title Class Diagram - Create a new profile
+
+
+
+
+@enduml
