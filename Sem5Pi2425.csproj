@@ -21,8 +21,4 @@
     <None Include="wwwroot\activate.html" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Docs\LogicalView\" />
-  </ItemGroup>
-
 </Project>
