@@ -10,38 +10,6 @@
 
         public UserDto(User user) : this(user.Id, user.Active, user.Username, user.Email, user.FullName, user.PhoneNumber, user.Role) {}
 
-        // Não sei ao certo o porquê, mas este dá com este post:
-        /*
-         * {
-            "active": true,
-            "username": {
-                "value": "skrskr"
-            },
-            "email": {
-                "value": "johndoe@example.com"
-            },
-            "fullName": {
-                "value": "Joaquim Da Silva Queiros"
-            },
-            "phoneNumber": {
-                "Value": "969999999"
-            },
-            "role": "Admin"
-        }
-        */
-        /*
-        [JsonConstructor]
-        public UserDto(bool active, Username username, Email email, FullName fullName, PhoneNumber phoneNumber, Role role) {
-            Id = new Guid();
-            Active = active;
-            Username = username;
-            Email = email;
-            FullName = fullName;
-            PhoneNumber = phoneNumber;
-            Role = role;
-        }
-        */
-
         public UserDto(UserId id, bool active, Username username, Email email, FullName fullName,
             PhoneNumber phoneNumber, Role role) {
             Id = id;
