@@ -1,0 +1,67 @@
+﻿@startuml
+
+
+autonumber
+
+        actor Admin
+        participant UserController as UC
+        participant UserService as US
+        participant User as U
+        participant UserRepository as UR
+        participant EmailService as ES
+    
+        Admin->>UC: POST /api/Users/backoffice (CreateBackofficeUserDto)
+        activate UC
+        UC->>US: CreateBackofficeUserAsync(CreateBackofficeUserDto)
+        activate US
+        US->>UR: GetByEmailAsync(email)
+        activate UR
+        UR-->>US: user (user exists) or null (user doesn't exist)
+        deactivate UR
+        US->>US: IsValidBackofficeRole(role)
+        US->>U: CreateBackofficeUser(CreateBackofficeUserDto)
+        activate U
+        U->>U: SetBackofficeRoleFromString(role)
+        U-->>US: new User object
+        deactivate U
+        US->>UR: AddAsync(user)
+        activate UR
+        UR-->>US: Added User
+        deactivate UR
+        US->>US: CommitAsync()
+        US->>ES: SendActivationEmailAsync(email, activationToken)
+        activate ES
+        ES-->>US: Email sent confirmation
+        deactivate ES
+        US-->>UC: UserDto
+        deactivate US
+        UC-->>Admin: 200 OK (UserDto)
+        deactivate UC
+    
+        Note over Admin,ES: User receives activation email
+    
+        Admin->>UC: POST /api/Users/activate (token, ActivateUserDto)
+        activate UC
+        UC->>US: ActivateUserAsync(token, password)
+        activate US
+        US-->>US: (Password == ConfirmPassowrd)
+        US-->>Password: IsPasswordStrong(password)
+        US->>UR: GetByActivationTokenAsync(token)
+        activate UR
+        UR-->>US: User
+        deactivate UR
+        US->>U: SetPassword(password)
+        activate U
+        U->>U: MarkAsActive()
+        U-->>US: Updated User
+        deactivate U
+        US->>US: CommitAsync()
+        US->>ES: SendConfirmationEmailAsync(email)
+        activate ES
+        ES-->>US: Email sent confirmation
+        deactivate ES
+        US-->>UC: UserDto
+        deactivate US
+        UC-->>Admin: 200 OK (UserDto)
+        deactivate UC
+@enduml
