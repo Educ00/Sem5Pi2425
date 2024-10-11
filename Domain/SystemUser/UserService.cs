@@ -109,7 +109,7 @@ namespace Sem5Pi2425.Domain.SystemUser {
         }
 
         // TODO: Add some encryption to the password
-        public async Task<UserDto> ResetPassword(UserId userId, string password) {
+        public async Task<UserDto> ResetPasswordAsync(UserId userId, string password) {
             var user = await this._repo.GetByIdAsync(userId);
 
             if (user == null) {
@@ -135,7 +135,7 @@ namespace Sem5Pi2425.Domain.SystemUser {
             }
             var user = User.CreateBackofficeUser(dto);
 
-            await _repo.AddAsync(user);
+            user = await _repo.AddAsync(user);
             await _unitOfWork.CommitAsync();
 
             await _emailService.SendActivationEmailAsync(user.Email.Value, user.ActivationToken);
