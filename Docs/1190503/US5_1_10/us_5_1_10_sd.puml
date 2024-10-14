@@ -3,7 +3,7 @@ skinparam monochrome true
 skinparam packageStyle rectangle
 skinparam shadowing false
 
-title Sequence Diagram - Delete Patient Profile (US 5.1.10)
+title Sequence Diagram - Admin wants to delete a Patient profile
 
 actor "Admin" as Admin
 participant "PatientController" as Controller <<controller>>

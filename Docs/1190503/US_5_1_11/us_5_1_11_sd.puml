@@ -3,7 +3,7 @@ skinparam monochrome true
 skinparam packageStyle rectangle
 skinparam shadowing false
 
-title Sequence Diagram - List/Search Patient Profiles (US 5.1.11 - One DTO and One Service)
+title Sequence Diagram - Admin wants to list/search Patient profile.
 
 actor "Admin" as Admin
 participant "PatientController" as Controller <<controller>>
