@@ -17,5 +17,9 @@ namespace Sem5Pi2425.Infrastructure.Users {
         public Task<User> GetByActivationTokenAsync(string token) {
             return Objs.FirstOrDefaultAsync(x => x.ActivationToken.Equals(token));
         }
+
+        public Task<User> GetByPasswordResetToken(string token) {
+            return Objs.FirstOrDefaultAsync(x => x.PasswordRequestToken.Equals(token));
+        }
     }
 }

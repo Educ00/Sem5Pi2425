@@ -5,5 +5,6 @@ namespace Sem5Pi2425.Domain.SystemUser {
     public interface IUserRepository: IRepository<User, UserId> {
         Task<User> GetByEmailAsync(Email email);
         Task<User> GetByActivationTokenAsync(string token);
+        Task<User> GetByPasswordResetToken(string token);
     }
 }

@@ -12,6 +12,8 @@ namespace Sem5Pi2425.Domain.SystemUser {
         public Password Password { get; private set; }
         public string ActivationToken { get; private set; }
         public DateTime? ActivationTokenExpiry { get; private set; }
+        public string PasswordRequestToken { get; private set; }
+        public DateTime? PasswordRequestTokenExpiry { get; private set; }
 
         protected User() { }
 
@@ -26,6 +28,8 @@ namespace Sem5Pi2425.Domain.SystemUser {
             Role = role;
             ActivationToken = Guid.NewGuid().ToString();
             ActivationTokenExpiry = DateTime.UtcNow.AddHours(24);
+            PasswordRequestToken = "";
+            PasswordRequestTokenExpiry = null;
         }
 
         public static User CreateBackofficeUser(CreateBackofficeUserDto dto) {
@@ -70,6 +74,13 @@ namespace Sem5Pi2425.Domain.SystemUser {
 
         public void ChangePassword(string password) {
             this.Password = new Password(password);
+            this.PasswordRequestToken = null;
+            this.PasswordRequestTokenExpiry = null;
+        }
+        
+        public void GeneratePasswordRequestToken() {
+            this.PasswordRequestToken = Guid.NewGuid().ToString();
+            this.PasswordRequestTokenExpiry = DateTime.UtcNow.AddHours(24);
         }
     }
 }

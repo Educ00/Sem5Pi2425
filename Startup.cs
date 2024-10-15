@@ -46,7 +46,7 @@ namespace Sem5Pi2425 {
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+
             app.UseRouting();
 
             app.UseAuthorization();

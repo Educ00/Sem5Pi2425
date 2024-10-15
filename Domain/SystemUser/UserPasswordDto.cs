@@ -1,6 +1,6 @@
 ﻿namespace Sem5Pi2425.Domain.SystemUser;
 
-public class ActivateUserDto
+public class UserPasswordDto
 {
     public string Token { get; set; }
     public string Password { get; set; }

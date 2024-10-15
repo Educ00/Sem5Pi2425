@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUser;
@@ -13,11 +11,9 @@ namespace Sem5Pi2425.Controllers {
     [ApiController]
     public class UsersController : ControllerBase {
         private readonly UserService _service;
-        private readonly IWebHostEnvironment _environment;
 
-        public UsersController(UserService service, IWebHostEnvironment environment) {
+        public UsersController(UserService service) {
             this._service = service;
-            this._environment = environment;
         }
         
         // GET: api/Users
@@ -26,7 +22,7 @@ namespace Sem5Pi2425.Controllers {
             return await this._service.GetAllUsersAsync();
         }
         
-        // GET: api/Users/5
+        // GET: api/Users/id
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> GetById(string id) {
             try
@@ -57,8 +53,28 @@ namespace Sem5Pi2425.Controllers {
             }
         }
         
-        // Post: api/Users/backoffice
-        [HttpPost("backoffice")]
+        // DELETE: api/Users/id
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<UserDto>> HardDelete(string id) {
+            try
+            {
+                Console.WriteLine("USERID Controller->" + id);
+
+                var user = await _service.DeleteUserAsync(new UserId(id));
+                Console.WriteLine("Encontrei este nino->" + user.Value.FullName);
+                if (user == null) {
+                    return NotFound();
+                }
+
+                return Ok(user);
+            }
+            catch (BusinessRuleValidationException e) {
+                return BadRequest(new { Message = e.Message });
+            }
+        }
+        
+        // Post: api/Users/backoffice/create
+        [HttpPost("backoffice/create")]
         //[Authorize(Roles = "admin")]
         public async Task<ActionResult<UserDto>> CreateBackofficeUser(CreateBackofficeUserDto dto) {
             try {
@@ -70,12 +86,13 @@ namespace Sem5Pi2425.Controllers {
             }
         }
 
-        // Inactivate: api/Users/5/inactivate
-        [HttpPatch("{id}/inactivate")]
-        public async Task<ActionResult<UserDto>> Inactivate(UserId userId) {
+        // Inactivate: api/Users/inactivate/id
+        [HttpPatch("inactivate/{id}")]
+        public async Task<ActionResult<UserDto>> Inactivate(string id) {
+            // TODO: Test if this method actually works!..
             try
             {
-                var user = await _service.InactivateUserAsync(userId);
+                var user = await _service.InactivateUserAsync(id);
 
                 if (user == null) {
                     return NotFound();
@@ -88,7 +105,8 @@ namespace Sem5Pi2425.Controllers {
                 return BadRequest(new { Message = e.Message });
             }
         }
-        
+
+        /*
         // GET: api/Users/activate
         [HttpGet("activate")]
         [AllowAnonymous]
@@ -97,15 +115,16 @@ namespace Sem5Pi2425.Controllers {
             var path = Path.Combine(_environment.WebRootPath, "activate.html");
             return PhysicalFile(path, "text/html");
         }
+        */
         
-        // Activate: api/Users
+        // Activate: api/Users/activate
         [HttpPost("activate")]
         [AllowAnonymous]
-        public async Task<ActionResult<UserDto>> ActivateUser([FromBody] ActivateUserDto dto)
+        public async Task<ActionResult<UserDto>> ActivateUser([FromBody] UserPasswordDto passwordDto)
         {
             try
             {
-                var user = await _service.ActivateUserAsync(dto);
+                var user = await _service.ActivateUserAsync(passwordDto);
                 return Ok(user);
             }
             catch (BusinessRuleValidationException e)
@@ -114,24 +133,30 @@ namespace Sem5Pi2425.Controllers {
             }
         }
         
-        // DELETE: api/Users/5/delete
-        [HttpDelete("{id}/delete")]
-        public async Task<ActionResult<UserDto>> HardDelete(UserId userId) {
-            try
-            {
-                var user = await _service.DeleteUserAsync(userId);
-
-                if (user == null) {
-                    return NotFound();
-                }
-
-                return Ok(user);
+        // POST: api/Users/backoffice/request-password-reset
+        [HttpPost("backoffice/request-password-reset")]
+        [AllowAnonymous]
+        public async Task<ActionResult> RequestPasswordReset([FromBody] string email) {
+            try {
+                await _service.RequestPasswordResetAsync(email);
+                return Ok("Password request sent to " + email);
             }
             catch (BusinessRuleValidationException e) {
-                return BadRequest(new { Message = e.Message });
+                return BadRequest(new {Message = e.Message});
             }
         }
         
+        // POST: api/Users/backoffice/reset-password
+        [HttpPost("backoffice/reset-password")]
+        public async Task<ActionResult<UserDto>> ResetPassword([FromBody] UserPasswordDto userPasswordDto) {
+            try {
+                var user = await _service.CompletePasswordReset(userPasswordDto);
+                return Ok(user);
+            }
+            catch (BusinessRuleValidationException e) {
+                return BadRequest(new {Message = e.Message});
+            }
+        }
         
         
         // FALTAM OUTROS METODOS

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -65,7 +64,7 @@ namespace Sem5Pi2425.Infrastructure.EmailInfra {
         public async Task SendActivationEmailAsync(string email, string activationToken) {
             var activationLink = $"{_configuration["AppUrl"]}/api/Users/activate?token={activationToken}";
             var subject = "Activate Your Account";
-            var body = GetActivationEmailTemplate(activationLink);
+            var body = GetActivationEmailTemplate(activationLink, activationToken);
             var fromAddress = _configuration["Email:FromAddress"];
 
             await SendEmailAsync(email, fromAddress, subject, body);
@@ -77,6 +76,15 @@ namespace Sem5Pi2425.Infrastructure.EmailInfra {
             var fromAddress = _configuration["Email:FromAddress"];
 
             await SendEmailAsync(email, fromAddress, subject, body);
+        }
+
+        public async Task SendBackofficeUserPasswordResetEmailAsync(string emailValue, string userPasswordRequestToken) {
+            var resetLink = $"{_configuration["AppUrl"]}/api/Users/backoffice/reset-password?token={userPasswordRequestToken}";
+            var subject = "Reset Your Password";
+            var body = GetPasswordResetEmailTemplate(resetLink);
+            var fromAdress = _configuration["Email:FromAdress"];
+
+            await SendEmailAsync(emailValue, fromAdress, subject, body);
         }
 
         private string GetConfirmationEmailTemplate() {
@@ -92,14 +100,28 @@ namespace Sem5Pi2425.Infrastructure.EmailInfra {
                 </html>";
         }
 
-        private string GetActivationEmailTemplate(string activationLink) {
+        private string GetActivationEmailTemplate(string activationLink, string activationToken) {
             return $@"
                 <html>
                 <body>
                     <h2>Welcome to Our System</h2>
                     <p>Please click the link below to activate your account:</p>
                     <p><a href='{activationLink}'>Activate Account</a></p>
+                    <p>Token:'{activationToken}</p>'
                     <p>This link will expire in 24 hours.</p>
+                </body>
+                </html>";
+        }
+
+        private string GetPasswordResetEmailTemplate(string resetLink) {
+            return $@"
+                <html>
+                <body>
+                    <h2>Password Reset Request</h2>
+                    <p>You have requested to reset your password. Please click the link below to set a new password:</p>
+                    <p><a href='{resetLink}'>Reset Password</a></p>
+                    <p>This link will expire in 24 hours.</p>
+                    <p>If you did not request a password reset, please ignore this email.</p>
                 </body>
                 </html>";
         }
