@@ -163,7 +163,7 @@ Staff <|- Doctor
 Staff <|- Nurse
 Staff <|-- Technician
 
-Appointment <|-- SurgeryRoom
+Appointment --o SurgeryRoom
 
 OperationType --* OperationRequest
 OperationType o--- "0..*"Staff
