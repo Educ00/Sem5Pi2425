@@ -4,8 +4,9 @@ using Sem5Pi2425.Domain.SystemUserAggr;
 
 namespace Sem5Pi2425.Domain.StaffAggr;
 
-public class Staff : Entity<UniqueIdentifier> {
+public class Staff : Entity<UserId> {
     public User User { get; private set; }
+    public UniqueIdentifier UniqueIdentifier { get; private set; }
     public List<AvailableSlots> AvailableSlots { get; private set; }
     public Specialization Specialization { get; private set; }
 
@@ -16,9 +17,10 @@ public class Staff : Entity<UniqueIdentifier> {
             throw new BusinessRuleValidationException("Invalid staff role,");
         }
 
+        this.Id = user.Id;
+        this.UniqueIdentifier = uniqueIdentifier;
         this.User = user;
-        this.AvailableSlots = availableSlots;   
-        this.Id = uniqueIdentifier;
+        this.AvailableSlots = availableSlots;
         this.Specialization = specialization;
     }
 }

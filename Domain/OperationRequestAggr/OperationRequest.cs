@@ -14,7 +14,6 @@ public class OperationRequest : Entity<OperationRequestId>, IAggregateRoot {
     protected OperationRequest() { }
 
     public OperationRequest(DateTime deadline, Priority priority, User doctor, Patient patient) {
-        // TODO: set the default priority according the business
         this.Id = OperationRequestId.NewOperationRequestId();
         this.Deadline = deadline;
         this.Priority = priority;

@@ -6,7 +6,7 @@ using Sem5Pi2425.Domain.SystemUserAggr;
 
 namespace Sem5Pi2425.Domain.PatientAggr;
 
-public class Patient : Entity<MedicalRecordsNumber> {
+public class Patient : Entity<UserId> {
     public User User { get; private set; }
     public EmergencyContact EmergencyContact { get; private set; }
     public List<MedicalCondition> MedicalConditions { get; private set; }
@@ -20,7 +20,7 @@ public class Patient : Entity<MedicalRecordsNumber> {
         if (!user.Role.Equals(Role.patient)) {
             throw new BusinessRuleValidationException("Invalid user!");
         }
-        this.Id = medicalRecordsNumber;
+        this.Id = user.Id;
         this.User = user;
         this.EmergencyContact = emergencyContact;
         this.MedicalConditions = medicalConditions;

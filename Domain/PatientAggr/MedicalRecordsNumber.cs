@@ -1,18 +1,31 @@
-﻿using Sem5Pi2425.Domain.Shared;
+﻿using System;
+using Sem5Pi2425.Domain.Shared;
 
 namespace Sem5Pi2425.Domain.PatientAggr;
 
-public class MedicalRecordsNumber : EntityId{
-    public MedicalRecordsNumber(object value) : base(value) { }
-    protected override string createFromString(string text) {
-        return text;
+public class MedicalRecordsNumber : IValueObject {
+    public string Value { get; private set; }
+
+    protected MedicalRecordsNumber() { }
+
+    public static MedicalRecordsNumber NewMedicalRecordsNumber() {
+        var medicalRecordsNumber = new MedicalRecordsNumber {
+            Value = DateTime.Now.ToString("yyyyMM") + "000001"
+        };
+        return medicalRecordsNumber;
     }
 
-    public override string AsString() {
-        return (string)ObjValue;
+    public DateTime GetDate() {
+        var datePart = Value[..6];
+        return DateTime.ParseExact(datePart, "yyyyMM", null);
     }
 
-    public static MedicalRecordsNumber NewMedicalRecordsNumber(string text) {
-        return new MedicalRecordsNumber(text);
+    public int GetNumber() {
+        var numberPart = Value[6..];
+        return int.Parse(numberPart);
+    }
+
+    public void IncrementSequencialNumber() {
+        this.Value = GetDate().ToString("yyyyMM") + (GetNumber() + 1).ToString("D6");
     }
 }

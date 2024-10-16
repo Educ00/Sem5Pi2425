@@ -3,18 +3,19 @@ using Sem5Pi2425.Domain.Shared;
 
 namespace Sem5Pi2425.Domain.StaffAggr;
 
-public class UniqueIdentifier : EntityId{
-    public UniqueIdentifier(string value) : base(value) { }
+public class UniqueIdentifier : IValueObject {
+    public string Value { get; private set; }
     
-    protected override string createFromString(string text) {
-        return text;
+    protected UniqueIdentifier() { }
+    
+    public UniqueIdentifier(char rolePrefix, int sequentialNumber) {
+        this.Value = rolePrefix + DateTime.Now.ToString("yyyyMM") + sequentialNumber.ToString("D5");
     }
 
-    public override string AsString() {
-        return (string)ObjValue;
-    }
-
-    public static UniqueIdentifier NewUniqueIdentifier() {
-        return new UniqueIdentifier(Guid.NewGuid().ToString());
+    public static UniqueIdentifier CreateFromString(string text) {
+        var temp = new UniqueIdentifier {
+            Value = text
+        };
+        return temp;
     }
 }

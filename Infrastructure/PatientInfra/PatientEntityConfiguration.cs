@@ -11,7 +11,7 @@ public class PatientEntityConfiguration : IEntityTypeConfiguration<Patient> {
 
         builder.Property(p => p.Id).HasConversion(
             id => id.Value,
-            value => new MedicalRecordsNumber(value));
+            value => new UserId(value));
 
         builder.HasOne(p => p.User);
 
