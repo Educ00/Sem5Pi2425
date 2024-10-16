@@ -5,12 +5,24 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Sem5Pi2425.Domain.AppointmentAggr;
+using Sem5Pi2425.Domain.OperationRequestAggr;
+using Sem5Pi2425.Domain.OperationTypeAggr;
+using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Infrastructure;
 using Sem5Pi2425.Infrastructure.Shared;
 using Sem5Pi2425.Domain.Shared;
-using Sem5Pi2425.Domain.SystemUser;
-using Sem5Pi2425.Infrastructure.Users;
+using Sem5Pi2425.Domain.StaffAggr;
+using Sem5Pi2425.Domain.SurgeryRoomAggr;
+using Sem5Pi2425.Domain.SystemUserAggr;
+using Sem5Pi2425.Infrastructure.AppointmentInfra;
+using Sem5Pi2425.Infrastructure.SystemUser;
 using Sem5Pi2425.Infrastructure.EmailInfra;
+using Sem5Pi2425.Infrastructure.OperationRequestInfra;
+using Sem5Pi2425.Infrastructure.OperationTypeInfra;
+using Sem5Pi2425.Infrastructure.PatientInfra;
+using Sem5Pi2425.Infrastructure.StaffInfra;
+using Sem5Pi2425.Infrastructure.SurgeryRoomInfra;
 
 namespace Sem5Pi2425 {
     public class Startup {
@@ -26,9 +38,7 @@ namespace Sem5Pi2425 {
             services.AddDbContext<Sem5Pi2425DbContext>(opt =>
                 opt.UseInMemoryDatabase("Sem5Pi2425DB")
                 .ReplaceService<IValueConverterSelector, StronglyEntityIdValueConverterSelector>());
-
-            services.AddTransient<IEmailService, EmailService>();
-
+            
             ConfigureMyServices(services);
             
 
@@ -57,8 +67,22 @@ namespace Sem5Pi2425 {
         public void ConfigureMyServices(IServiceCollection services) {
             services.AddTransient<IUnitOfWork, UnitOfWork>();
 
+            services.AddTransient<IEmailService, EmailService>();
+            
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<UserService>();
+
+            services.AddTransient<IAppointmentRepository, AppointmentRepository>();
+
+            services.AddTransient<IOperationRequestRepository, OperationRequestRepository>();
+
+            services.AddTransient<IOperationTypeRepository, OperationTypeRepository>();
+
+            services.AddTransient<IPatientRepository, PatientRepository>();
+
+            services.AddTransient<IStaffRepository, StaffRepository>();
+
+            services.AddTransient<ISurgeryRoomRepository, SurgeryRoomRepository>();
         }
     }
 }

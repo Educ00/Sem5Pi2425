@@ -107,7 +107,7 @@ namespace Sem5Pi2425.Infrastructure.EmailInfra {
                     <h2>Welcome to Our System</h2>
                     <p>Please click the link below to activate your account:</p>
                     <p><a href='{activationLink}'>Activate Account</a></p>
-                    <p>Token:'{activationToken}</p>'
+                    <p>Token->{activationToken}</p>
                     <p>This link will expire in 24 hours.</p>
                 </body>
                 </html>";

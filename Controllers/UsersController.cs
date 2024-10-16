@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.Shared;
-using Sem5Pi2425.Domain.SystemUser;
+using Sem5Pi2425.Domain.SystemUserAggr;
 
 namespace Sem5Pi2425.Controllers {
     [Route("api/[controller]")]
