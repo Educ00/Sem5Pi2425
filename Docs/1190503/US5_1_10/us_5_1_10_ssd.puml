@@ -1,0 +1,27 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title SSD - Admin wants to delete a Patient profile
+
+actor "Admin" as Admin
+participant "Sistema AIT" as System <<system>>
+
+Admin -> System : Request to delete patient profile (ID)
+activate System
+
+    System -> System : Fetch patient profile (from database)
+    System -> System : Display patient profile for confirmation
+    
+Admin -> System : Confirm deletion of patient profile
+activate System
+
+    System -> System : Mark patient for deletion
+    System -> System : Permanently delete patient profile (within time frame)
+    System -> System : Log deletion for audit/GDPR purposes
+    
+System --> Admin : Notify admin of successful deletion
+deactivate System
+
+@enduml

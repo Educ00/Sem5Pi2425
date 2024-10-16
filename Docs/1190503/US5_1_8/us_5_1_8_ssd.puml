@@ -1,0 +1,23 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title SSD - US 5.1.8 - Admin creates a new Patient
+
+actor "Admin" as Admin
+participant "Sistema AIT" as System <<system>>
+
+Admin -> System : Create new patient request
+activate System
+
+    System -> System : Validate form input
+    System -> System : Check if email and phone are unique
+    System -> System : Create new patient record in repository
+    System -> System : Generate Medical Record Number
+    System -> System : Return patient confirmation
+    
+System --> Admin : Show patient creation success
+deactivate System
+
+@enduml

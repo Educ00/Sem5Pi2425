@@ -1,0 +1,23 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title SSD - US 5.1.7 - Patient Login Using External IAM
+
+actor "Patient" as Patient
+participant "Sistema AIT" as System <<system>>
+
+Patient -> System : Login request (IAM credentials)
+activate System
+
+    System -> System : Authenticate with IAM Service
+    System -> System : Validate IAM credentials
+    System -> System : Create session (with token)
+    System -> System : Fetch patient data
+    System -> System : Return patient data
+    
+System --> Patient : Display patient dashboard (appointments, records)
+deactivate System
+
+@enduml

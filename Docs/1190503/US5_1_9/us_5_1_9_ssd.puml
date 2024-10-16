@@ -1,0 +1,27 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title SSD - 5.1.8 - Admin edits a patient profile
+
+actor "Admin" as Admin
+participant "Sistema AIT" as System <<system>>
+
+Admin -> System : Request patient profile to edit (ID)
+activate System
+
+    System -> System : Fetch patient profile (from database)
+    System -> System : Display patient profile to Admin
+    
+Admin -> System : Submit updated patient data (PatientDTO)
+activate System
+
+    System -> System : Update patient data in database
+    System -> System : Log profile changes
+    System -> System : Notify patient if contact info has changed
+    
+System --> Admin : Show confirmation of updated profile
+deactivate System
+
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title SSD - Admin wants to list/search Patient profile
+
+actor "Admin" as Admin
+participant "Sistema AIT" as System <<system>>
+
+Admin -> System : Request to search patient profiles (search attributes)
+activate System
+
+    System -> System : Search for patients by criteria (name, email, etc.)
+    System -> System : Return list of matching patient profiles (paginated)
+
+System --> Admin : Display list of patient profiles (key info)
+
+Admin -> System : Select a patient profile (view/edit/delete)
+activate System
+
+    System -> System : Fetch full patient profile by ID
+    System -> System : Return full patient profile
+    
+System --> Admin : Display full patient profile (with options to view, edit, or delete)
+deactivate System
+
+@enduml
