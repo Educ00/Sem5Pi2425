@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUserAggr;
 
@@ -53,17 +54,17 @@ namespace Sem5Pi2425.Controllers {
             }
         }
         
-        // POST: api/Patients
-        [HttpPost] 
-        public async Task<ActionResult<UserDto>> CreatePatient(UserDto dto) {
+        [HttpPost("patient")]
+        public async Task<ActionResult<PatientDto>> CreatePatient( UserDto userDto, PatientDto patientDto) {
             try {
-                var patient = await _service.AddPatientAsync(dto);
+                var patient = await _service.AddPatientAsync(userDto, patientDto);
                 return Ok(patient);
             }
             catch(BusinessRuleValidationException e) {
-                return BadRequest(new { e.Message });
+                return BadRequest(new { Message = e.Message });
             }
         }
+
         
         // DELETE: api/Users/id
         [HttpDelete("{id}")]

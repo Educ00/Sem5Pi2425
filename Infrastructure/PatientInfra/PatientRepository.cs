@@ -8,5 +8,16 @@ using Sem5Pi2425.Infrastructure.Shared;
 namespace Sem5Pi2425.Infrastructure.PatientInfra;
 
 public class PatientRepository : BaseRepository<Patient, UserId>, IPatientRepository {
-    public PatientRepository(Sem5Pi2425DbContext context) : base(context.Patients) { }
+    public PatientRepository(Sem5Pi2425DbContext context) : base(context.Patients)
+    {
+        
+    }
+    
+    public Task<Patient> addPatient(Patient patient)
+    {
+        
+        //to implement
+
+        return null;
+    }
 }

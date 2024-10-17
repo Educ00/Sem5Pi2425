@@ -7,7 +7,7 @@
         public FullName FullName { get; set; }
         public PhoneNumber PhoneNumber { get; set; }
         public Role Role { get; set; }
-
+        
         public UserDto(User user) : this(user.Id, user.Active, user.Username, user.Email, user.FullName, user.PhoneNumber, user.Role) {}
 
         public UserDto(UserId id, bool active, Username username, Email email, FullName fullName,

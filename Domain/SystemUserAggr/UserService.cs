@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Sem5Pi2425.Domain.AppointmentAggr;
+using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Infrastructure.EmailInfra;
 using Sem5Pi2425.Domain.Shared;
 
@@ -13,14 +15,15 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _repo;
         private readonly IEmailService _emailService;
-        private readonly ICurrentUserService _currentUserService;
-
-
+       // private readonly ICurrentUserService _currentUserService;
+        private readonly IPatientRepository _patientrepo;
         
-        public UserService(IUnitOfWork unitOfWork, IUserRepository repo, IEmailService emailService) {
+        
+        public UserService(IUnitOfWork unitOfWork, IUserRepository repo, IEmailService emailService, IPatientRepository patientrepo) {
             this._unitOfWork = unitOfWork;
             this._repo = repo;
             this._emailService = emailService;
+            this._patientrepo = patientrepo;
         }
 
         public async Task<List<UserDto>> GetAllUsersAsync() {
@@ -57,14 +60,28 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
                 user.PhoneNumber, user.Role);
         }
 
-        public async Task<ActionResult<UserDto>> AddPatientAsync(UserDto dto) {
+        public async Task<ActionResult<PatientDto>> AddPatientAsync(UserDto userDto, PatientDto patientDto) {
             var patientId = UserId.NewUserId();
-            var patient = new User(patientId, dto.Username, dto.Email, dto.FullName, dto.PhoneNumber, Role.patient);
-            await this._repo.AddAsync(patient);
+            var patientUser = new User(patientId, userDto.Username, userDto.Email, userDto.FullName, userDto.PhoneNumber, Role.patient);
+            var medicalRecordsNumber = MedicalRecordsNumber.NewMedicalRecordsNumber();
+
+            var patient = new Patient(
+                patientUser, 
+                patientDto.EmergencyContact, 
+                patientDto.MedicalConditions, 
+                patientDto.BirthDate, 
+                patientDto.Gender, 
+                medicalRecordsNumber,  
+                new List<Appointment>() 
+            );
+
+            await this._patientrepo.addPatient(patient);
             await this._unitOfWork.CommitAsync();
-            return new UserDto(patientId, patient.Active, patient.Username, patient.Email, patient.FullName, patient.PhoneNumber, Role.patient);
+            
+            return new PatientDto(new UserDto(patient.User),patient.EmergencyContact, patient.MedicalConditions, patient.BirthDate, patient.Gender,new List<Appointment>()              
+            );
         }
-        
+
         public async Task<ActionResult<UserDto>> InactivateUserAsync(string userId) {
             var user = await this._repo.GetByIdAsync(new UserId(userId));
 
@@ -99,7 +116,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
             return new UserDto(user);
         }
-        
+        /*
         public async Task<UserDto> GetCurrentUserAsync() {
             var userId = new UserId(_currentUserService.UserId);
             var user = await _repo.GetByIdAsync(userId);
@@ -111,6 +128,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             return new UserDto(user.Id, user.Active, user.Username, user.Email, user.FullName, user.PhoneNumber, user.Role);
         }
 
+*/
         public async Task<ActionResult<UserDto>> DeleteUserAsync(UserId userId) {
             Console.WriteLine("USERID SERVICE->" + userId.Value);
             var user = await this._repo.GetByIdAsync(userId);
