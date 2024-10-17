@@ -54,6 +54,14 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
                 user.PhoneNumber, user.Role);
         }
 
+        public async Task<ActionResult<UserDto>> AddPatientAsync(UserDto dto) {
+            var patientId = UserId.NewUserId();
+            var patient = new User(patientId, dto.Username, dto.Email, dto.FullName, dto.PhoneNumber, Role.patient);
+            await this._repo.AddAsync(patient);
+            await this._unitOfWork.CommitAsync();
+            return new UserDto(patientId, patient.Active, patient.Username, patient.Email, patient.FullName, patient.PhoneNumber, Role.patient);
+        }
+        
         public async Task<ActionResult<UserDto>> InactivateUserAsync(string userId) {
             var user = await this._repo.GetByIdAsync(new UserId(userId));
 

@@ -53,6 +53,18 @@ namespace Sem5Pi2425.Controllers {
             }
         }
         
+        // POST: api/Users
+        [HttpPost] 
+        public async Task<ActionResult<UserDto>> CreatePatient(UserDto dto) {
+            try {
+                var patient = await _service.AddPatientAsync(dto);
+                return Ok(patient);
+            }
+            catch(BusinessRuleValidationException e) {
+                return BadRequest(new { e.Message });
+            }
+        }
+        
         // DELETE: api/Users/id
         [HttpDelete("{id}")]
         public async Task<ActionResult<UserDto>> HardDelete(string id) {
