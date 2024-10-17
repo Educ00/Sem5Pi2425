@@ -53,7 +53,7 @@ namespace Sem5Pi2425.Controllers {
             }
         }
         
-        // POST: api/Users
+        // POST: api/Patients
         [HttpPost] 
         public async Task<ActionResult<UserDto>> CreatePatient(UserDto dto) {
             try {
