@@ -3,30 +3,31 @@ skinparam monochrome true
 skinparam packageStyle rectangle
 skinparam shadowing false
 
-title 5.1.12 As an Admin, I want to create a new staff profile, so that I can add them to the hospital’s roster.
+title SSD for 5.1.15 - List/Search, View, Edit, and Deactivate Staff Profiles
 
+actor "Admin" as Admin
+participant "System" as System
 
-autonumber
-actor "Admin" as ADMIN
-
-participant "<<System>> \nSystem" as System
-
-    ADMIN -> System : selects to create a new staff profile
+activate Admin
+    Admin -> System : searchStaff(criteria)
     activate System
-
-    System --> ADMIN : ask the information to create a new staff
-    deactivate System
-
-    ADMIN -> System : types the information
-    activate System
-
-    System --> ADMIN : asks if it wants to add it to the roster
+    System --> Admin : list of staff profiles
     deactivate System
     
-    ADMIN -> System : types yes/no
+    Admin -> System : viewStaffDetails(staffId)
     activate System
-
-    System --> ADMIN : message success
-    deactivate System    
-
+    System --> Admin : staff details
+    deactivate System
+    
+    Admin -> System : editStaff(staffId, updatedData)
+    activate System
+    System --> Admin : confirmation of edit
+    deactivate System
+    
+    Admin -> System : deactivateStaff(staffId)
+    activate System
+    System --> Admin : confirmation of deactivation
+    deactivate System
+    
+deactivate Admin
 @enduml

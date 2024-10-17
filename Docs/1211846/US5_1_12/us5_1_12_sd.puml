@@ -1,11 +1,48 @@
 ﻿@startuml
-'https://plantuml.com/sequence-diagram
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-autonumber
+title 5.1.12 As an Admin, I want to create a new staff profile, so that I can add them to the hospital’s roster.
 
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
+actor "Admin" as Admin
+participant "StaffUI" as UI <<UI>>
+participant "StaffController" as Controller <<controller>>
+entity "StaffCreateDTO" as CreateDTO <<dto>>
+participant "StaffService" as Service <<service>>
+participant "UserRepository" as Repo <<repository>>
 
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+
+activate Admin
+    Admin -> UI : asks to create a Staff
+    deactivate Admin
+    activate UI
+            UI -> Admin : sends the form to insert Staff informations
+    deactivate UI
+    activate Admin
+            Admin -> UI : inserts the information
+            deactivate Admin
+    activate UI
+UI -> Controller: demands for staff creation (POST)
+deactivate UI
+activate Controller
+    Controller -> CreateDTO: instantiates StaffCreateDTO
+    Controller -> Service: CreateStaff(CreateDTO)
+    deactivate Controller
+    activate Service
+
+        Service -> Repo: Creates newStaff()
+        activate Repo
+        Repo --> Service: return created Staff 
+        deactivate Repo
+        Service --> Controller : ReturnsStaff
+        deactivate Service
+        activate Controller
+        
+        
+Controller --> UI: returns staff data
+activate UI
+UI->Admin : shows success
+deactivate Controller
+
 @enduml

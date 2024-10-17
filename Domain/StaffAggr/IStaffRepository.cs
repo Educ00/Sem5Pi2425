@@ -4,5 +4,7 @@ using Sem5Pi2425.Domain.SystemUserAggr;
 namespace Sem5Pi2425.Domain.StaffAggr;
 
 public interface IStaffRepository : IRepository<Staff, UserId> {
+    void Add(Staff staff);
     
+    void Edit(Staff staff,Specialization specialization);
 }

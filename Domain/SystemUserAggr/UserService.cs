@@ -13,7 +13,10 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _repo;
         private readonly IEmailService _emailService;
+        private readonly ICurrentUserService _currentUserService;
 
+
+        
         public UserService(IUnitOfWork unitOfWork, IUserRepository repo, IEmailService emailService) {
             this._unitOfWork = unitOfWork;
             this._repo = repo;
@@ -95,6 +98,17 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             await _emailService.SendConfirmationEmailAsync(user.Email.Value);
 
             return new UserDto(user);
+        }
+        
+        public async Task<UserDto> GetCurrentUserAsync() {
+            var userId = new UserId(_currentUserService.UserId);
+            var user = await _repo.GetByIdAsync(userId);
+
+            if (user == null) {
+                return null;
+            }
+
+            return new UserDto(user.Id, user.Active, user.Username, user.Email, user.FullName, user.PhoneNumber, user.Role);
         }
 
         public async Task<ActionResult<UserDto>> DeleteUserAsync(UserId userId) {

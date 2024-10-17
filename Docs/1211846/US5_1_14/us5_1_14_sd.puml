@@ -1,11 +1,49 @@
 ﻿@startuml
-'https://plantuml.com/sequence-diagram
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-autonumber
+title As an Admin, I want to deactivate a staff profile, so that I can remove them from the hospital’s active roster without losing their historical data.
 
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
+actor "Admin" as Admin
+participant "StaffUI" as UI <<UI>>
+participant "StaffController" as Controller <<controller>>
+entity "StaffDeactivateDTO" as DeactivateDTO <<dto>>
+participant "StaffService" as Service <<service>>
+participant "UserRepository" as Repo <<repository>>
 
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+
+
+activate Admin
+    Admin -> UI : asks to deactivate a Staff
+    deactivate Admin
+    activate UI
+            UI -> Admin : shows all the staff members
+    deactivate UI
+    activate Admin
+            Admin -> UI : selects the staff member
+            deactivate Admin
+    activate UI
+UI -> Controller: demands for staff deactivation (
+deactivate UI
+activate Controller
+    Controller -> DeactivateDTO: instantiates StaffDeactivateDTO
+    Controller -> Service: DeactivateStaff(DeactivateDTO)
+    deactivate Controller
+    activate Service
+
+        Service -> Repo: Deactivates staff and saves historical data
+        activate Repo
+        Repo --> Service: return deactivated Staff 
+        deactivate Repo
+        Service --> Controller : ReturnsStaff
+        deactivate Service
+        activate Controller
+        
+        
+Controller --> UI: returns staff data
+activate UI
+UI->Admin : shows success
+deactivate Controller
+
 @enduml

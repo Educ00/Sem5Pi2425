@@ -1,11 +1,53 @@
 ﻿@startuml
-'https://plantuml.com/sequence-diagram
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-autonumber
+title 5.1.13 As an Admin, I want to edit a staff’s profile, so that I can update their information.
 
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
+actor "Admin" as Admin
+participant "StaffUI" as UI <<UI>>
+participant "StaffController" as Controller <<controller>>
+entity "StaffEditDTO" as EditDTO <<dto>>
+participant "StaffService" as Service <<service>>
+participant "UserRepository" as Repo <<repository>>
 
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+
+activate Admin
+    Admin -> UI : asks to edit Staff
+    deactivate Admin
+    activate UI
+            UI -> Admin : sends the list of staff
+    deactivate UI
+    activate Admin
+            Admin -> UI : selects a staff
+            deactivate Admin
+    activate UI
+UI -> Controller: demands for staff editing 
+deactivate UI
+activate Controller
+    Controller -> EditDTO: instantiates StaffEditDTO
+    Controller -> Service: CreateStaff(EditDTO)
+    deactivate Controller
+    activate Service
+ 
+        Service -> Repo: Edits staff()
+        activate Repo
+        Repo --> Service: return edited Staff 
+        deactivate Repo
+        Service -> Repo: sendEmail()
+        activate Repo
+        Repo->Repo:sendEmail()
+        Repo --> Service: confirms email sent
+        deactivate Repo           
+        Service --> Controller : Returns Staff
+        deactivate Service
+        activate Controller
+        
+        
+Controller --> UI: returns staff data
+activate UI
+UI->Admin : shows success
+deactivate Controller
+
 @enduml

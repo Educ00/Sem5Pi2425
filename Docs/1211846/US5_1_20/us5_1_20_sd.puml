@@ -1,11 +1,81 @@
 ﻿@startuml
-'https://plantuml.com/sequence-diagram
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-autonumber
+title 5.1.21 As an Admin, I want to edit existing operation types, so that I can update or correct information about the procedure.
 
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
+actor "Admin" as Admin
+participant "OperationTypeUI" as UI <<UI>>
+participant "OperationTypeController" as Controller <<controller>>
+entity "OperationTypeDTO" as OperationTypeDTO <<dto>>
+participant "OperationTypeService" as Service <<service>>
+participant "OperationTypeRepository" as Repo <<repository>>
 
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+activate Admin
+    Admin -> UI : asks to create a new operation type
+    deactivate Admin
+    activate UI
+            UI -> Controller: demands to create a new operation type
+    deactivate UI
+    activate Controller
+        Controller -> OperationTypeDTO: instantiates OperationTypeDTO
+        Controller -> Service: CreateOperationType(OperationTypeDTO)
+        deactivate Controller
+        activate Service
+            Service -> Repo: searches staff
+            activate Repo
+            Repo --> Service: returns matching staff
+            deactivate Repo
+        Service --> Controller: returns staff data
+        deactivate Service
+        activate Controller
+        
+Controller --> UI: returns staff data
+activate UI
+UI->Admin : displays staff list/search results
+deactivate Controller
+
+activate Admin
+    Admin -> UI : selects a staff member and action (view/edit/deactivate)
+    deactivate Admin
+    activate UI
+UI -> Controller: requests staff details or an action (edit, deactivate)
+deactivate UI
+activate Controller
+
+alt Edit Staff
+    Controller -> EditDTO: instantiates StaffEditDTO
+    Controller -> Service: EditStaff(EditDTO)
+    deactivate Controller
+    activate Service
+        Service -> Repo: edits staff
+        activate Repo
+        Repo --> Service: returns edited staff
+        deactivate Repo
+        Service --> Controller: returns updated staff
+        deactivate Service
+    Controller --> UI: returns updated staff data
+    activate UI
+    UI->Admin : shows edit success
+    deactivate Controller
+end
+
+alt Deactivate Staff
+    Controller -> DeactivateDTO: instantiates StaffDeactivateDTO
+    Controller -> Service: DeactivateStaff(DeactivateDTO)
+    deactivate Controller
+    activate Service
+        Service -> Repo: deactivates staff and saves historical data
+        activate Repo
+        Repo --> Service: returns deactivated staff
+        deactivate Repo
+        Service --> Controller: returns deactivated staff
+        deactivate Service
+    Controller --> UI: returns deactivation success
+    activate UI
+    UI->Admin : shows deactivation success
+    deactivate Controller
+end
+
 @enduml

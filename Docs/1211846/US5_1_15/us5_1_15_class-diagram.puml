@@ -4,7 +4,7 @@
 skinparam monochrome true
 skinparam shadowing false
 
-title Class Diagram - As an Admin, I want to create a new staff profile, so that I can add them to the hospital’s roster.
+title 5.1.15 As an Admin, I want to list/search staff profiles, so that I can see the details, edit, and remove staff profiles.
 
 class Admin{
 

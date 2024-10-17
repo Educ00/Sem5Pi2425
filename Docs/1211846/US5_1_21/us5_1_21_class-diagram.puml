@@ -4,33 +4,13 @@
 skinparam monochrome true
 skinparam shadowing false
 
-title Class Diagram - As an Admin, I want to create a new staff profile, so that I can add them to the hospital’s roster.
+title 5.1.21 As an Admin, I want to edit existing operation types, so that I can update or correct information about the procedure.
 
 class Admin{
 
 }
-class Slots{
-    +Date: Date
-    +StartingHour: Date
-    +EndHour: Date
-}
 
-class Staff{
-    +FirstName: String
-    +LastName: String
-    +FullName: String
-    +LicenseNumber(ID): long
-    +ContactInformation(ID-FK):long
-    +PhoneNumber: int
-    +AvailabilitySlots: Slots
 
-}
-
-class ContactInformation{
-    +ID:long
-    +Email: String
-    +PhoneNumber: int
-}
 
 
 class User{
@@ -43,7 +23,7 @@ class User{
 class OperationType{
     +ID:long
     +Name:String
-    +Staff: Staff
+    +Staff: Staff 
     +EstimatedDuration : Date
 
 }
@@ -84,17 +64,16 @@ class OperationTypeRepository {
 
 }
 
-Slots-->Staff : uses
-ContactInformation-->Staff :has
+
 Admin-|>User
 Admin --> SessionManager : uses
 IAMService --> SessionToken : returns
 SessionManager --> Session : creates
 Admin --> IAMService : authenticates with
-Admin --> StaffController : inserts data into
-StaffController-->StaffService: deletes  staff
-Staff-->StaffController:uses
-StaffService-->StaffRepository: deletes staff
+Admin --> OperationTypeController : inserts data into
+OperationTypeController-->OperationTypeService: creates typeOperation
+operations-->OperationTypeController:uses
+OperationTypeService-->OperationTypeRepository: creates typeOperation
 SessionToken --> Session : verifies
 
 @enduml

@@ -23,4 +23,5 @@ public class Staff : Entity<UserId> {
         this.AvailableSlots = availableSlots;
         this.Specialization = specialization;
     }
+
 }

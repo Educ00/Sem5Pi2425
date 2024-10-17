@@ -1,11 +1,84 @@
 ﻿@startuml
-'https://plantuml.com/sequence-diagram
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-autonumber
+title 5.1.15 As an Admin, I want to list/search staff profiles, so that I can see the details, edit, and remove staff profiles.
 
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
+actor "Admin" as Admin
+participant "StaffUI" as UI <<UI>>
+participant "StaffController" as Controller <<controller>>
+entity "StaffSearchDTO" as SearchDTO <<dto>>
+entity "StaffEditDTO" as EditDTO <<dto>>
+entity "StaffDeactivateDTO" as DeactivateDTO <<dto>>
+entity "StaffCreateDTO" as CreateDTO <<dto>>
+participant "StaffService" as Service <<service>>
+participant "UserRepository" as Repo <<repository>>
 
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+activate Admin
+    Admin -> UI : asks to list/search Staff
+    deactivate Admin
+    activate UI
+            UI -> Controller: demands for staff search
+    deactivate UI
+    activate Controller
+        Controller -> SearchDTO: instantiates StaffSearchDTO
+        Controller -> Service: SearchStaff(SearchDTO)
+        deactivate Controller
+        activate Service
+            Service -> Repo: searches staff
+            activate Repo
+            Repo --> Service: returns matching staff
+            deactivate Repo
+        Service --> Controller: returns staff data
+        deactivate Service
+        activate Controller
+        
+Controller --> UI: returns staff data
+activate UI
+UI->Admin : displays staff list/search results
+deactivate Controller
+
+activate Admin
+    Admin -> UI : selects a staff member and action (view/edit/deactivate)
+    deactivate Admin
+    activate UI
+UI -> Controller: requests staff details or an action (edit, deactivate)
+deactivate UI
+activate Controller
+
+alt Edit Staff
+    Controller -> EditDTO: instantiates StaffEditDTO
+    Controller -> Service: EditStaff(EditDTO)
+    deactivate Controller
+    activate Service
+        Service -> Repo: edits staff
+        activate Repo
+        Repo --> Service: returns edited staff
+        deactivate Repo
+        Service --> Controller: returns updated staff
+        deactivate Service
+    Controller --> UI: returns updated staff data
+    activate UI
+    UI->Admin : shows edit success
+    deactivate Controller
+end
+
+alt Deactivate Staff
+    Controller -> DeactivateDTO: instantiates StaffDeactivateDTO
+    Controller -> Service: DeactivateStaff(DeactivateDTO)
+    deactivate Controller
+    activate Service
+        Service -> Repo: deactivates staff and saves historical data
+        activate Repo
+        Repo --> Service: returns deactivated staff
+        deactivate Repo
+        Service --> Controller: returns deactivated staff
+        deactivate Service
+    Controller --> UI: returns deactivation success
+    activate UI
+    UI->Admin : shows deactivation success
+    deactivate Controller
+end
+
 @enduml
