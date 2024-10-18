@@ -8,5 +8,6 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         Task<User> GetByPasswordResetToken(string token);
         Task<User> GetByUsername(string dtoUsername);
         Task<User> GetByPhoneNumber(string dtoPhoneNumber);
+        Task<User> GetByDeletionToken(string deletionToken);
     }
 }

@@ -183,7 +183,38 @@ namespace Sem5Pi2425.Controllers {
                     return BadRequest(new { Message = e.Message });
                 }
             }
+            
+            // POST: api/Users/Patient/request-deletion
+            [HttpPost("Patient/request-deletion")]
+            [AllowAnonymous]
+            public async Task<ActionResult> ResquestDeletion([FromBody] RequestAccountDeletionDto dto) {
+                try {
+                    var result = await _patientService.RequestAccountDeletion(dto.Email);
+                    if (!result) {
+                        throw new BusinessRuleValidationException("Something failed");
+                    }
+                    return Ok(new { Message = "Deletion request sent. Please check your email for confirmation." });
+                }
+                catch (BusinessRuleValidationException e) {
+                    return BadRequest(new { Message = e.Message });
+                }
+            }
 
+            // POST: api/User/Patient/confirm-deletion
+            [HttpPost("Patient/confirm-deletion")]
+            [AllowAnonymous]
+            public async Task<ActionResult> ConfirmDeletion([FromBody] ConfirmAccountDeletionDto dto) {
+                try {
+                    var result = await _patientService.ConfirmAccountDeletion(dto.Token);
+                    if (!result) {
+                        throw new BusinessRuleValidationException("Something failed");
+                    }
+                    return Ok(new { Message = "Account deletion process completed." });
+                }
+                catch (BusinessRuleValidationException e) {
+                    return BadRequest(new { Message = e.Message });
+                }
+            }
 
             // FALTAM OUTROS METODOS
         }

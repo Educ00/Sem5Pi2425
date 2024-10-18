@@ -110,6 +110,22 @@ namespace Sem5Pi2425.Domain.EmailAggr {
             await SendEmailAsync(email, fromAddress, subject, body);
         }
 
+        public async Task SendAccountDeletionConfirmationEmailAsync(string emailValue, string deletionToken) {
+            var subject = "Confirm Account Deletion";
+            var body = GetAccountDeletionConfirmationEmailTemplate(deletionToken);
+            var fromAddress = _configuration["Email:FromAddress"];
+
+            await SendEmailAsync(emailValue, fromAddress, subject, body);
+        }
+
+        public async Task SendAccountDeletionCompletedEmailAsync(string email) {
+            var subject = "Account Deletion Completed";
+            var body = GetAccountDeletionCompletedEmailTemplate();
+            var fromAddress = _configuration["Email:FromAddress"];
+
+            await SendEmailAsync(email, fromAddress, subject, body);
+        }
+
         private string GetActivationEmailTemplate(string activationLink, string activationToken) {
             return $@"
                 <html>
@@ -146,6 +162,32 @@ namespace Sem5Pi2425.Domain.EmailAggr {
                 <p>If you have any questions, please don't hesitate to contact our support team.</p>
             </body>
             </html>";
+        }
+
+        private string GetAccountDeletionConfirmationEmailTemplate(string deletionToken) {
+            var confirmationLink = $"{_configuration["AppUrl"]}/api/Users/confirm-deletion?token={deletionToken}";
+            return $@"
+                <html>
+                <body>
+                    <h2>Confirm Account Deletion</h2>
+                    <p>You have requested to delete your account. To confirm this action, please click the link below:</p>
+                    <p><a href='{confirmationLink}'>Confirm Account Deletion</a></p>
+                    <p>If you did not request this action, please ignore this email.</p>
+                    <p>This link will expire in 30 days.</p>
+                </body>
+                </html>";
+        }
+
+        private string GetAccountDeletionCompletedEmailTemplate() {
+            return @"
+                <html>
+                <body>
+                    <h2>Account Deletion Completed</h2>
+                    <p>Your account and associated data have been successfully deleted from our system.</p>
+                    <p>We're sorry to see you go. If you have any feedback or concerns, please don't hesitate to contact our support team.</p>
+                    <p>Thank you for using our services.</p>
+                </body>
+                </html>";
         }
     }
 }

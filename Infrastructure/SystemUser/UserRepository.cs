@@ -31,5 +31,9 @@ namespace Sem5Pi2425.Infrastructure.SystemUser {
         public Task<User> GetByPhoneNumber(string dtoPhoneNumber) {
             return Objs.FirstOrDefaultAsync(x => x.PhoneNumber.Value.Equals(dtoPhoneNumber));
         }
+
+        public Task<User> GetByDeletionToken(string deletionToken) {
+            return Objs.FirstOrDefaultAsync(x => x.DeletionToken.Equals(deletionToken));
+        }
     }
 }

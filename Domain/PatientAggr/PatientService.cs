@@ -61,4 +61,59 @@ public class PatientService {
         return new PatientDto(new UserDto(patient.User), patient.EmergencyContact, patient.MedicalConditions,
             patient.BirthDate, patient.Gender, patient.AppointmentsHistory);
     }
+
+    public async Task<bool> RequestAccountDeletion(string email) {
+        var user = await _userRepository.GetByEmailAsync(email);
+
+        if (user == null) {
+            throw new BusinessRuleValidationException("This email does not exist in the database");
+        }
+        
+        var patient = await _patientRepository.GetByIdAsync(user.Id);
+
+        if (patient == null) {
+            throw new BusinessRuleValidationException("Patient not found");
+        }
+
+        var deletionToken = Guid.NewGuid().ToString();
+        patient.User.SetDeletionToken(deletionToken);
+
+        await _emailService.SendAccountDeletionConfirmationEmailAsync(patient.User.Email.Value, deletionToken);
+
+        await _unitOfWork.CommitAsync();
+        return true;
+    }
+
+    public async Task<bool> ConfirmAccountDeletion(string deletionToken) {
+        var user = await _userRepository.GetByDeletionToken(deletionToken);
+
+        if (user == null) {
+            throw new BusinessRuleValidationException("Invalid deletion token");
+        }
+
+        var patient = await _patientRepository.GetByIdAsync(user.Id);
+
+        if (patient == null) {
+            throw new BusinessRuleValidationException("Patient not found");
+        }
+
+        patient.MarkForDeletion();
+        user.MarkForDeletion();
+
+        await _unitOfWork.CommitAsync();
+        
+        await DeletePatientData(patient);
+        return true;
+    }
+
+    private async Task DeletePatientData(Patient patient) {
+        // TODO: escolher qual informação é apagada, neste momento vamos apagar toda!
+        var email = patient.User.Email.Value;
+        _userRepository.Remove(patient.User);
+        _patientRepository.Remove(patient);
+        
+        await _emailService.SendAccountDeletionCompletedEmailAsync(email);
+        
+        await _unitOfWork.CommitAsync();
+    }
 }

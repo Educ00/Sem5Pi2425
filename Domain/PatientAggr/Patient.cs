@@ -13,6 +13,7 @@ public class Patient : Entity<UserId> {
     public DateOnly BirthDate { get; private set; }
     public Gender Gender { get; private set; }
     public List<Appointment> AppointmentsHistory { get; private set; }
+    public bool MarkedForDeletion { get; private set; }
     
     protected Patient(){}
 
@@ -27,5 +28,9 @@ public class Patient : Entity<UserId> {
         this.BirthDate = birthDate;
         this.Gender = gender;
         this.AppointmentsHistory = appointmentsHistory;
+    }
+
+    public void MarkForDeletion() {
+        this.MarkedForDeletion = true;
     }
 }

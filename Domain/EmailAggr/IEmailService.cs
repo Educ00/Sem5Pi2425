@@ -8,4 +8,6 @@ public interface IEmailService {
     Task SendActivationEmailAsync(string emailValue, string userActivationToken);
     Task SendBackofficeUserPasswordResetEmailAsync(string emailValue, string userPasswordRequestToken);
     Task SendWelcomeEmailAsync(string emailValue);
+    Task SendAccountDeletionConfirmationEmailAsync(string emailValue, string deletionToken);
+    Task SendAccountDeletionCompletedEmailAsync(string emailValue);
 }

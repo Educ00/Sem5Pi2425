@@ -14,6 +14,8 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         public DateTime? ActivationTokenExpiry { get; private set; }
         public string PasswordRequestToken { get; private set; }
         public DateTime? PasswordRequestTokenExpiry { get; private set; }
+        public string DeletionToken { get; private set; }
+        public bool MarkedForDeletion { get; private set; }
 
         protected User() { }
 
@@ -80,6 +82,15 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         public void GeneratePasswordRequestToken() {
             this.PasswordRequestToken = Guid.NewGuid().ToString();
             this.PasswordRequestTokenExpiry = DateTime.UtcNow.AddHours(24);
+        }
+
+        public void SetDeletionToken(string token) {
+            this.DeletionToken = token;
+        }
+
+        public void MarkForDeletion() {
+            this.MarkedForDeletion = true;
+            this.DeletionToken = null;
         }
 
         public void UpdateNameFromGoogle(FullName newName) {
