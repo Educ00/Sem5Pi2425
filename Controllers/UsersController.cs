@@ -60,7 +60,7 @@ namespace Sem5Pi2425.Controllers {
             }
         }
 
-        
+        /*
         [HttpPost("patient")]
         public async Task<ActionResult<PatientDto>> CreatePatient(UserDto userDto, PatientDto patientDto) {
             try {
@@ -71,6 +71,7 @@ namespace Sem5Pi2425.Controllers {
                 return BadRequest(new { e.Message });
             }
         }
+        */
 
 
         // DELETE: api/Users/id
