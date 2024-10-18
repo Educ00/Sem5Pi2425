@@ -159,9 +159,9 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             var user = User.CreateBackofficeUser(dto);
 
             user = await _repo.AddAsync(user);
+            await _emailService.SendActivationEmailAsync(user.Email.Value, user.ActivationToken);
             await _unitOfWork.CommitAsync();
 
-            await _emailService.SendActivationEmailAsync(user.Email.Value, user.ActivationToken);
             return new UserDto(user);
         }
 
@@ -223,6 +223,24 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             await this._unitOfWork.CommitAsync();
 
             return new UserDto(user);
+        }
+
+        public async Task<UserDto> LoginAsync(LoginDto loginDto) {
+            var user = await _repo.GetByUsername(loginDto.Username);
+
+            if (user == null) {
+                throw new BusinessRuleValidationException("Invalid username or password");
+            }
+
+            if (!VerifyPassword(loginDto.Password, user.Password.Value)) {
+                throw new BusinessRuleValidationException("Invalid username or password");
+            }
+
+            return new UserDto(user);
+        }
+
+        private bool VerifyPassword(string loginDtoPassword, string userPassword) {
+            return loginDtoPassword.Equals(userPassword);
         }
     }
 }

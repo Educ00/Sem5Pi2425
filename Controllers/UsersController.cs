@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Extensions;
 using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUserAggr;
@@ -25,12 +26,14 @@ namespace Sem5Pi2425.Controllers {
         }
 
         // GET: api/Users
+        [Authorize(Roles = "admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAll() {
             return await this._userUserService.GetAllUsersAsync();
         }
 
         // GET: api/Users/id
+        [Authorize(Roles = "admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> GetById(string id) {
             try {
@@ -47,6 +50,7 @@ namespace Sem5Pi2425.Controllers {
             }
         }
 
+        /*
         // POST: api/Users
         [HttpPost]
         public async Task<ActionResult<UserDto>> CreateUser(UserDto dto) {
@@ -58,6 +62,7 @@ namespace Sem5Pi2425.Controllers {
                 return BadRequest(new { Message = e.Message });
             }
         }
+        */
 
         /*
         [HttpPost("patient")]
@@ -93,6 +98,7 @@ namespace Sem5Pi2425.Controllers {
             }
 
             // Post: api/Users/backoffice/create
+            [Authorize(Roles = "admin")]
             [HttpPost("backoffice/create")]
             //[Authorize(Roles = "admin")]
             public async Task<ActionResult<UserDto>> CreateBackofficeUser(CreateBackofficeUserDto dto) {
@@ -105,7 +111,9 @@ namespace Sem5Pi2425.Controllers {
                 }
             }
 
+            
             // Inactivate: api/Users/inactivate/id
+            [Authorize(Roles = "admin")]
             [HttpPatch("inactivate/{id}")]
             public async Task<ActionResult<UserDto>> Inactivate(string id) {
                 // TODO: Test if this method actually works!..
@@ -123,20 +131,9 @@ namespace Sem5Pi2425.Controllers {
                 }
             }
 
-            /*
-            // GET: api/Users/activate
-            [HttpGet("activate")]
-            [AllowAnonymous]
-            public IActionResult ActivateUserPage([FromQuery] string token)
-            {
-                var path = Path.Combine(_environment.WebRootPath, "activate.html");
-                return PhysicalFile(path, "text/html");
-            }
-            */
-
             // Activate: api/Users/activate
+            [Authorize(Roles = "admin,nurse,patient,doctor,technician")]
             [HttpPost("activate")]
-            [AllowAnonymous]
             public async Task<ActionResult<UserDto>> ActivateUser([FromBody] UserPasswordDto passwordDto) {
                 try {
                     var user = await _userUserService.ActivateUserAsync(passwordDto);
@@ -148,8 +145,8 @@ namespace Sem5Pi2425.Controllers {
             }
 
             // POST: api/Users/backoffice/request-password-reset
+            [Authorize(Roles = "nurse,doctor,technician")]
             [HttpPost("backoffice/request-password-reset")]
-            [AllowAnonymous]
             public async Task<ActionResult> RequestPasswordReset([FromBody] string email) {
                 try {
                     await _userUserService.RequestPasswordResetAsync(email);
@@ -161,6 +158,7 @@ namespace Sem5Pi2425.Controllers {
             }
 
             // POST: api/Users/backoffice/reset-password
+            [Authorize(Roles = "nurse,doctor,technician")]
             [HttpPost("backoffice/reset-password")]
             public async Task<ActionResult<UserDto>> ResetPassword([FromBody] UserPasswordDto userPasswordDto) {
                 try {
@@ -173,6 +171,7 @@ namespace Sem5Pi2425.Controllers {
             }
 
             // POST: api/Users/Patient/signin
+            [Authorize(Roles = "patient")]
             [HttpPost("Patient/signin")]
             public async Task<ActionResult<PatientDto>> SignIn([FromBody] RegisterPatientDto dto) {
                 try {
@@ -185,8 +184,8 @@ namespace Sem5Pi2425.Controllers {
             }
             
             // POST: api/Users/Patient/request-deletion
+            [Authorize(Roles = "patient")]
             [HttpPost("Patient/request-deletion")]
-            [AllowAnonymous]
             public async Task<ActionResult> ResquestDeletion([FromBody] RequestAccountDeletionDto dto) {
                 try {
                     var result = await _patientService.RequestAccountDeletion(dto.Email);
@@ -201,8 +200,8 @@ namespace Sem5Pi2425.Controllers {
             }
 
             // POST: api/User/Patient/confirm-deletion
+            [Authorize(Roles = "patient")]
             [HttpPost("Patient/confirm-deletion")]
-            [AllowAnonymous]
             public async Task<ActionResult> ConfirmDeletion([FromBody] ConfirmAccountDeletionDto dto) {
                 try {
                     var result = await _patientService.ConfirmAccountDeletion(dto.Token);
@@ -215,6 +214,50 @@ namespace Sem5Pi2425.Controllers {
                     return BadRequest(new { Message = e.Message });
                 }
             }
+            
+            // POST: api/Users/login
+            [HttpPost("login")]
+            [AllowAnonymous]
+            public async Task<ActionResult<UserDto>> Login([FromBody] LoginDto loginDto)
+            {
+                try
+                {
+                    var user = await _userUserService.LoginAsync(loginDto);
+
+                    var claims = new List<Claim>
+                    {
+                        new(ClaimTypes.Name, user.Username.Value),
+                        new(ClaimTypes.NameIdentifier, user.Id.Value),
+                        new(ClaimTypes.Role, user.Role.ToString())
+                    };
+
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                    await HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(claimsIdentity),
+                        new AuthenticationProperties
+                        {
+                            IsPersistent = true,
+                            ExpiresUtc = DateTime.UtcNow.AddHours(1)
+                        });
+
+                    return Ok(new { Message = "Logged in successfully", UserId = user.Id.Value });
+                }
+                catch (BusinessRuleValidationException e)
+                {
+                    return BadRequest(new { Message = e.Message });
+                }
+            }
+            
+            // POST: api/Users/logout
+            [HttpPost("logout")]
+            public async Task<IActionResult> Logout()
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return Ok(new { Message = "Logged out successfully" });
+            }
+            
 
             // FALTAM OUTROS METODOS
         }

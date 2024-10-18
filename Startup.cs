@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +19,7 @@ using Sem5Pi2425.Domain.StaffAggr;
 using Sem5Pi2425.Domain.SurgeryRoomAggr;
 using Sem5Pi2425.Domain.SystemUserAggr;
 using Sem5Pi2425.Infrastructure.AppointmentInfra;
+using Sem5Pi2425.Infrastructure.BootstrapInfra;
 using Sem5Pi2425.Infrastructure.SystemUser;
 using Sem5Pi2425.Infrastructure.OperationRequestInfra;
 using Sem5Pi2425.Infrastructure.OperationTypeInfra;
@@ -39,13 +42,20 @@ namespace Sem5Pi2425 {
                 .ReplaceService<IValueConverterSelector, StronglyEntityIdValueConverterSelector>());
             
             ConfigureMyServices(services);
-            
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options => {
+                    options.ExpireTimeSpan = TimeSpan.FromHours(1);
+                    options.SlidingExpiration = true;
+                    options.AccessDeniedPath = "/Forbiden/";
+                    options.LoginPath = "/api/Users/login";
+                });
 
             services.AddControllers().AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, UserBootstrapService bootstrapService) {
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             }
@@ -54,10 +64,14 @@ namespace Sem5Pi2425 {
                 app.UseHsts();
             }
 
+            bootstrapService.BootstrapInitialUsers().Wait();
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
+            app.UseAuthentication();
+            
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
@@ -65,6 +79,8 @@ namespace Sem5Pi2425 {
 
         public void ConfigureMyServices(IServiceCollection services) {
             services.AddTransient<IUnitOfWork, UnitOfWork>();
+
+            services.AddTransient<UserBootstrapService>();
 
             services.AddTransient<IEmailService, EmailService>();
             
