@@ -50,7 +50,7 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
             var user = new User(userId, new Username("aa"), new Email("teste@gmail.com"), new FullName("Joaquim Da Costa Queiroz"), new PhoneNumber("969999999"), Role.admin);
             var emergencyContact = new EmergencyContact(new PhoneNumber("969999999"), new FullName("Maria Da Costa"),
                 new Email("maria@gmail.com"));
-            var patient = new Patient(user, emergencyContact, new List<MedicalCondition>(), new DateOnly(1985,5,10), Gender.Female, MedicalRecordsNumber.NewMedicalRecordsNumber(), new List<Appointment>());
+            var patient = new Patient(user, emergencyContact, new List<MedicalCondition>(), new DateOnly(1985,5,10), Gender.female, new List<Appointment>());
             operationRequest = new OperationRequest(new DateTime(2024, 11, 15), Priority.Urgent, user, patient);
             
             await _repo.AddAsync(operationRequest);

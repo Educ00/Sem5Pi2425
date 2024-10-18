@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sem5Pi2425.Domain.AppointmentAggr;
+using Sem5Pi2425.Domain.EmailAggr;
 using Sem5Pi2425.Domain.OperationRequestAggr;
 using Sem5Pi2425.Domain.OperationTypeAggr;
 using Sem5Pi2425.Domain.PatientAggr;
@@ -17,7 +18,6 @@ using Sem5Pi2425.Domain.SurgeryRoomAggr;
 using Sem5Pi2425.Domain.SystemUserAggr;
 using Sem5Pi2425.Infrastructure.AppointmentInfra;
 using Sem5Pi2425.Infrastructure.SystemUser;
-using Sem5Pi2425.Infrastructure.EmailInfra;
 using Sem5Pi2425.Infrastructure.OperationRequestInfra;
 using Sem5Pi2425.Infrastructure.OperationTypeInfra;
 using Sem5Pi2425.Infrastructure.PatientInfra;
@@ -34,7 +34,6 @@ namespace Sem5Pi2425 {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
-
             services.AddDbContext<Sem5Pi2425DbContext>(opt =>
                 opt.UseInMemoryDatabase("Sem5Pi2425DB")
                 .ReplaceService<IValueConverterSelector, StronglyEntityIdValueConverterSelector>());
@@ -79,6 +78,7 @@ namespace Sem5Pi2425 {
             services.AddTransient<IOperationTypeRepository, OperationTypeRepository>();
 
             services.AddTransient<IPatientRepository, PatientRepository>();
+            services.AddTransient<PatientService>();
 
             services.AddTransient<IStaffRepository, StaffRepository>();
 

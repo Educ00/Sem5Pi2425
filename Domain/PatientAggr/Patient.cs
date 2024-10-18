@@ -16,7 +16,7 @@ public class Patient : Entity<UserId> {
     
     protected Patient(){}
 
-    public Patient(User user, EmergencyContact emergencyContact, List<MedicalCondition> medicalConditions, DateOnly birthDate, Gender  gender, MedicalRecordsNumber medicalRecordsNumber, List<Appointment> appointmentsHistory) {
+    public Patient(User user, EmergencyContact emergencyContact, List<MedicalCondition> medicalConditions, DateOnly birthDate, Gender  gender, List<Appointment> appointmentsHistory) {
         if (!user.Role.Equals(Role.patient)) {
             throw new BusinessRuleValidationException("Invalid user!");
         }

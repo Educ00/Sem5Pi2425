@@ -12,12 +12,4 @@ public class PatientRepository : BaseRepository<Patient, UserId>, IPatientReposi
     {
         
     }
-    
-    public Task<Patient> addPatient(Patient patient)
-    {
-        
-        //to implement
-
-        return null;
-    }
 }

@@ -3,7 +3,7 @@ using System.Net.Mail;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
-namespace Sem5Pi2425.Infrastructure.EmailInfra {
+namespace Sem5Pi2425.Domain.EmailAggr {
     public class EmailService : IEmailService {
         private readonly IConfiguration _configuration;
         private SmtpClient _smtpClient;
@@ -78,8 +78,10 @@ namespace Sem5Pi2425.Infrastructure.EmailInfra {
             await SendEmailAsync(email, fromAddress, subject, body);
         }
 
-        public async Task SendBackofficeUserPasswordResetEmailAsync(string emailValue, string userPasswordRequestToken) {
-            var resetLink = $"{_configuration["AppUrl"]}/api/Users/backoffice/reset-password?token={userPasswordRequestToken}";
+        public async Task
+            SendBackofficeUserPasswordResetEmailAsync(string emailValue, string userPasswordRequestToken) {
+            var resetLink =
+                $"{_configuration["AppUrl"]}/api/Users/backoffice/reset-password?token={userPasswordRequestToken}";
             var subject = "Reset Your Password";
             var body = GetPasswordResetEmailTemplate(resetLink);
             var fromAdress = _configuration["Email:FromAdress"];
@@ -98,6 +100,14 @@ namespace Sem5Pi2425.Infrastructure.EmailInfra {
                     <p>Thank you for joining us!</p>
                 </body>
                 </html>";
+        }
+
+        public async Task SendWelcomeEmailAsync(string email) {
+            var subject = "Welcome to Our Healthcare Application";
+            var body = GetWelcomeEmailTemplate();
+            var fromAddress = _configuration["Email:FromAddress"];
+
+            await SendEmailAsync(email, fromAddress, subject, body);
         }
 
         private string GetActivationEmailTemplate(string activationLink, string activationToken) {
@@ -124,6 +134,18 @@ namespace Sem5Pi2425.Infrastructure.EmailInfra {
                     <p>If you did not request a password reset, please ignore this email.</p>
                 </body>
                 </html>";
+        }
+
+        private string GetWelcomeEmailTemplate() {
+            return @"
+            <html>
+            <body>
+                <h2>Welcome to Our Healthcare Application!</h2>
+                <p>Thank you for registering with us using your Google account.</p>
+                <p>You can now use our application to book appointments and manage your healthcare needs.</p>
+                <p>If you have any questions, please don't hesitate to contact our support team.</p>
+            </body>
+            </html>";
         }
     }
 }

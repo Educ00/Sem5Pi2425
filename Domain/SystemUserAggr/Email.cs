@@ -22,7 +22,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         }
         private bool IsValidEmail(string email) {
             if (string.IsNullOrWhiteSpace(email)) {
-                throw new ArgumentException("Email cannot be null or blank");
+                throw new ArgumentException("Email cannot be null or blank ->" + email);
             }
 
             try {

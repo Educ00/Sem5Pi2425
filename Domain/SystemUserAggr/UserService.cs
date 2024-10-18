@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.AppointmentAggr;
 using Sem5Pi2425.Domain.PatientAggr;
-using Sem5Pi2425.Infrastructure.EmailInfra;
+using Sem5Pi2425.Domain.EmailAggr;
 using Sem5Pi2425.Domain.Shared;
 
 namespace Sem5Pi2425.Domain.SystemUserAggr {
@@ -63,7 +63,6 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         public async Task<ActionResult<PatientDto>> AddPatientAsync(UserDto userDto, PatientDto patientDto) {
             var patientId = UserId.NewUserId();
             var patientUser = new User(patientId, userDto.Username, userDto.Email, userDto.FullName, userDto.PhoneNumber, Role.patient);
-            var medicalRecordsNumber = MedicalRecordsNumber.NewMedicalRecordsNumber();
 
             var patient = new Patient(
                 patientUser, 
@@ -71,11 +70,10 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
                 patientDto.MedicalConditions, 
                 patientDto.BirthDate, 
                 patientDto.Gender, 
-                medicalRecordsNumber,  
                 new List<Appointment>() 
             );
 
-            await this._patientrepo.addPatient(patient);
+            await this._patientrepo.AddAsync(patient);
             await this._unitOfWork.CommitAsync();
             
             return new PatientDto(new UserDto(patient.User),patient.EmergencyContact, patient.MedicalConditions, patient.BirthDate, patient.Gender,new List<Appointment>()              
@@ -170,6 +168,16 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         private static bool IsValidBackofficeRole(string role) {
             var validRoles = new[] { "admin", "doctor", "nurse", "technician" };
             return validRoles.Contains(role.ToLower());
+        }
+        
+        public async Task<UserDto> GetUserByEmailAsync(string email) {
+            var user = await _repo.GetByEmailAsync(email);
+            Console.WriteLine("\n\n--------\nuser->" + user.Email + "<-\n");
+            if (user == null) {
+                throw new BusinessRuleValidationException("User not found");
+            }
+
+            return new UserDto(user);
         }
 
         public async Task<UserDto> GetBackofficeUserByEmailAsync(Email email) {

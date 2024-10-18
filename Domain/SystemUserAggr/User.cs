@@ -54,9 +54,8 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         public void SetPassword(string password) {
             if (this.Password != null) {
                 throw new BusinessRuleValidationException("Password already set");
-                
             }
-            
+
             this.Password = new Password(password);
             this.ActivationToken = null;
             this.ActivationTokenExpiry = null;
@@ -77,10 +76,16 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             this.PasswordRequestToken = null;
             this.PasswordRequestTokenExpiry = null;
         }
-        
+
         public void GeneratePasswordRequestToken() {
             this.PasswordRequestToken = Guid.NewGuid().ToString();
             this.PasswordRequestTokenExpiry = DateTime.UtcNow.AddHours(24);
+        }
+
+        public void UpdateNameFromGoogle(FullName newName) {
+            if (!this.FullName.Equals(newName)) {
+                this.FullName = newName;
+            }
         }
     }
 }
