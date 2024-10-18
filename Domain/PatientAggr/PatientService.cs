@@ -47,22 +47,14 @@ public class PatientService {
         }
         var user = new User(UserId.NewUserId(), new Username(dto.Username), new Email(dto.Email),
             new FullName(dto.FullName), new PhoneNumber(dto.PhoneNumber), Role.patient);
-        user.SetPassword(dto.Password);
         var birthDate = DateOnly.Parse(dto.BirthDate);
         var emergencyContact = new EmergencyContact(new PhoneNumber(dto.EmergencyContactPhoneNumber), new FullName(dto.EmergencyContactFullName), new Email(dto.EmergencyContactEmail));
         List<MedicalCondition> medicalConditionsList = [
             new MedicalCondition(dto.MedicalConditions)
         ];
-        if (Enum.TryParse(dto.Gender, true, out Gender gender))
-        {
-        }
-        else
-        {
-            Console.WriteLine("Invalid gender string.");
-        }
-
+        Enum.TryParse(dto.Gender, true, out Gender gender);
         var patient = new Patient(user, emergencyContact, medicalConditionsList, birthDate, gender, null);
-        await _emailService.SendConfirmationEmailAsync(patient.User.Email.Value);
+        await _emailService.SendActivationEmailAsync(patient.User.Email.Value, patient.User.ActivationToken);
         await _userRepository.AddAsync(user);
         await _patientRepository.AddAsync(patient);
         await _unitOfWork.CommitAsync();
