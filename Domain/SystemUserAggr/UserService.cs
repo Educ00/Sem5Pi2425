@@ -33,11 +33,11 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
                 new UserDto(
                     user.Id,
                     user.Active,
-                    user.Username,
+                    user.Username.ToString(),
                     user.Email,
-                    user.FullName,
-                    user.PhoneNumber,
-                    user.Role));
+                    user.FullName.ToString(),
+                    user.PhoneNumber.ToString(),
+                    user.Role.ToString()));
             // Para testar se funfa só tirar o comentário. Deve aparecer.
             //listDTO.Add(new UserDto(new Guid(), true, new Username("aa"), new Email("teste@gmail.com"), new FullName("Joaquim Da Costa Queiroz"), new PhoneNumber("969999999"), Role.Admin));
             return listDto;
@@ -51,34 +51,21 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
         public async Task<ActionResult<UserDto>> AddUserAsync(UserDto dto) {
             var userId = UserId.NewUserId();
-            var user = new User(userId, dto.Username, dto.Email, dto.FullName, dto.PhoneNumber, dto.Role);
+            var username = new Username(dto.Username);
+            var email = new Email(dto.Email);
+            var fullname = new FullName(dto.FullName);
+            var phoneNumber = new PhoneNumber(dto.PhoneNumber);
+            Enum.TryParse(dto.Role, true, out Role role);
+            var user = new User(userId, username, email, fullname, phoneNumber,role);
             // Para testar se funfa só tirar o comentário. Deve aparecer.
             //user = new User(userId, new Username("aa"), new Email("teste@gmail.com"), new FullName("Joaquim Da Costa Queiroz"), new PhoneNumber("969999999"), Role.Admin);
             await this._repo.AddAsync(user);
             await this._unitOfWork.CommitAsync();
-            return new UserDto(user.Id, user.Active, user.Username, user.Email, user.FullName,
-                user.PhoneNumber, user.Role);
+            return new UserDto(user.Id, user.Active, user.Username.ToString(), user.Email, user.FullName.ToString(),
+                user.PhoneNumber.ToString(), user.Role.ToString());
         }
 
-        public async Task<ActionResult<PatientDto>> AddPatientAsync(UserDto userDto, PatientDto patientDto) {
-            var patientId = UserId.NewUserId();
-            var patientUser = new User(patientId, userDto.Username, userDto.Email, userDto.FullName, userDto.PhoneNumber, Role.patient);
-
-            var patient = new Patient(
-                patientUser, 
-                patientDto.EmergencyContact, 
-                patientDto.MedicalConditions, 
-                patientDto.BirthDate, 
-                patientDto.Gender, 
-                new List<Appointment>() 
-            );
-
-            await this._patientrepo.AddAsync(patient);
-            await this._unitOfWork.CommitAsync();
-            
-            return new PatientDto(new UserDto(patient.User),patient.EmergencyContact, patient.MedicalConditions, patient.BirthDate, patient.Gender,new List<Appointment>()              
-            );
-        }
+    
 
         public async Task<ActionResult<UserDto>> InactivateUserAsync(string userId) {
             var user = await this._repo.GetByIdAsync(new UserId(userId));
@@ -89,8 +76,8 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
             user.MarkAsInative();
             await this._unitOfWork.CommitAsync();
-            return new UserDto(user.Id, user.Active, user.Username, user.Email, user.FullName, user.PhoneNumber,
-                user.Role);
+            return new UserDto(user.Id, user.Active, user.Username.ToString(), user.Email, user.FullName.ToString(), user.PhoneNumber.ToString(),
+                user.Role.ToString());
         }
 
         public async Task<ActionResult<UserDto>> ActivateUserAsync(UserPasswordDto passwordDto) {
@@ -142,8 +129,8 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             this._repo.Remove(user);
             await this._unitOfWork.CommitAsync();
 
-            return new UserDto(user.Id, user.Active, user.Username, user.Email, user.FullName, user.PhoneNumber,
-                user.Role);
+            return new UserDto(user.Id, user.Active, user.Username.Value, user.Email.Value, user.FullName.Value, user.PhoneNumber.Value,
+                user.Role.ToString());
         }
 
         public async Task<ActionResult<UserDto>> CreateBackofficeUserAsync(CreateBackofficeUserDto dto) {

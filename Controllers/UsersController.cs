@@ -63,26 +63,27 @@ namespace Sem5Pi2425.Controllers {
             }
         }
         */
-
-        /*
-        [HttpPost("patient")]
-        public async Task<ActionResult<PatientDto>> CreatePatient(UserDto userDto, PatientDto patientDto) {
+        
+        // Post: api/Users/backoffice/create-patient
+        [Authorize(Roles = "admin")]
+        [HttpPost("backoffice/create-patient")]
+        public async Task<ActionResult<PatientDto>> CreatePatient([FromBody]RegisterPatientDto patientDto) {
             try {
-                var patient = await _userUserService.AddPatientAsync(userDto, patientDto);
+                var patient = await this._patientService.AddPatientAsync(patientDto);
                 return Ok(patient);
             }
             catch (BusinessRuleValidationException e) {
-                return BadRequest(new { e.Message });
+                return BadRequest(new { Message = e.Message });
             }
         }
-        */
+
 
 
         // DELETE: api/Users/id
             [HttpDelete("{id}")]
             public async Task<ActionResult<UserDto>> HardDelete(string id) {
                 try {
-                    Console.WriteLine("USERID Controller->" + id);
+                       Console.WriteLine("USERID Controller->" + id);
 
                     var user = await _userUserService.DeleteUserAsync(new UserId(id));
                     Console.WriteLine("Encontrei este nino->" + user.Value.FullName);
@@ -226,7 +227,7 @@ namespace Sem5Pi2425.Controllers {
 
                     var claims = new List<Claim>
                     {
-                        new(ClaimTypes.Name, user.Username.Value),
+                        new(ClaimTypes.Name, user.Username),
                         new(ClaimTypes.NameIdentifier, user.Id.Value),
                         new(ClaimTypes.Role, user.Role.ToString())
                     };

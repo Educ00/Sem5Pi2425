@@ -30,6 +30,36 @@ public class PatientService {
         return patient == null ? null : new UserDto(patient.User);
     }
 
+    public async Task<ActionResult<PatientDto>> AddPatientAsync(RegisterPatientDto registerPatientDto) {
+        var temp = _userRepository.GetByEmailAsync(registerPatientDto.Email);
+        if (temp.Result != null) {
+            throw new BusinessRuleValidationException("Email already registed!");
+        }
+
+        temp = _userRepository.GetByUsername(registerPatientDto.Username);
+        if (temp.Result != null) {
+            throw new BusinessRuleValidationException("Username already taken!");
+        }
+        
+        var user = new User(UserId.NewUserId(), new Username(registerPatientDto.Username), new Email(registerPatientDto.Email),
+            new FullName(registerPatientDto.FullName), new PhoneNumber(registerPatientDto.PhoneNumber), Role.patient);
+        
+        var birthDate = DateOnly.Parse(registerPatientDto.BirthDate);
+        var emergencyContact = new EmergencyContact(new PhoneNumber(registerPatientDto.EmergencyContactPhoneNumber), new FullName(registerPatientDto.EmergencyContactFullName), new Email(registerPatientDto.EmergencyContactEmail));
+        List<MedicalCondition> medicalConditionsList = [
+            new MedicalCondition(registerPatientDto.MedicalConditions)
+        ];
+        Enum.TryParse(registerPatientDto.Gender, true, out Gender gender);
+        var patient = new Patient(user, emergencyContact, medicalConditionsList, birthDate, gender, null);
+        
+        await this._userRepository.AddAsync(user);
+        await this._patientRepository.AddAsync(patient);
+        await this._unitOfWork.CommitAsync();
+            
+        return new PatientDto(new UserDto(user), emergencyContact, medicalConditionsList, patient.BirthDate, patient.Gender, patient.AppointmentsHistory);        
+          
+    }
+    
     public async Task<PatientDto> SignIn(RegisterPatientDto dto) {
         var temp = _userRepository.GetByEmailAsync(dto.Email);
         if (temp.Result != null) {
