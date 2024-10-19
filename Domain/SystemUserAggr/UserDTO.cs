@@ -3,7 +3,7 @@
         public UserId Id { get; set; }
         public bool Active { get; set; }
         public string Username { get; set; }
-        public string Email { get; set; }
+        public Email Email { get; set; }
         public string FullName { get; set; }
         public string PhoneNumber { get; set; }
         public string Role { get; set; }
@@ -15,7 +15,7 @@
             this.Id = id;
             this.Active = active;
             this.Username = username;
-            this.Email = email;
+            this.Email = (Email)email;
             this.FullName = fullName;
             this.PhoneNumber = phoneNumber;
             this.Role = role;

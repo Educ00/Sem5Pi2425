@@ -1,0 +1,47 @@
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Sem5Pi2425.Domain.OperationTypeAggr;
+using Sem5Pi2425.Domain.Shared;
+using Sem5Pi2425.Domain.StaffAggr;
+using Sem5Pi2425.Domain.SystemUserAggr;
+
+namespace Sem5Pi2425.Controllers;
+[ApiController]
+[Route("api/[controller]")]
+public class TypeOfOperationController : ControllerBase
+{
+    private readonly OperationTypeService _service;
+    private readonly UserService _userService;
+
+    public TypeOfOperationController(OperationTypeService operationTypeRepository,UserService userService)
+    {
+        this._service = operationTypeRepository;
+        this._userService = userService;
+    }
+    
+    [HttpPost]
+    public async Task<ActionResult<OperationTypeDto>> AddOperationType(OperationTypeDto dto) {
+        
+        try {
+            var operationType = await _service.CreateOperationType(dto);
+            return Ok(operationType);
+        }
+        catch (BusinessRuleValidationException e) {
+            return BadRequest(new { Message = e.Message });
+        }
+
+    }
+    
+    [HttpPut]
+    public async Task<ActionResult<OperationTypeDto>> EditOperationType(OperationTypeDto dto) {
+        
+        try {
+            var operationType = await _service.EditOperationType(dto);
+            return Ok(operationType);
+        }
+        catch (BusinessRuleValidationException e) {
+            return BadRequest(new { Message = e.Message });
+        }
+
+    }
+}

@@ -8,7 +8,7 @@ public class Staff : Entity<UserId> {
     public User User { get; private set; }
     public UniqueIdentifier UniqueIdentifier { get; private set; }
     public List<AvailableSlots> AvailableSlots { get; private set; }
-    public Specialization Specialization { get; private set; }
+    public Specialization Specialization { get; set; }
 
     protected Staff() { }
 

@@ -7,10 +7,10 @@ using Sem5Pi2425.Domain.StaffAggr;
 namespace Sem5Pi2425.Domain.OperationTypeAggr;
 
 public class OperationType : Entity<OperationTypeId> , IAggregateRoot{
-    public DateTime Duration { get; private set; }
-    public Name Name { get; private set; }
-    public Description Description { get; private set; }
-    public List<string> NeededSpecializations { get; private set; }
+    public DateTime Duration { get; set; }
+    public Name Name { get; set; }
+    public Description Description { get; set; }
+    public List<string> NeededSpecializations { get; set; }
 
     protected OperationType() { }
 
