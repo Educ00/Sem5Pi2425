@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -126,6 +127,22 @@ namespace Sem5Pi2425.Domain.EmailAggr {
             await SendEmailAsync(email, fromAddress, subject, body);
         }
 
+        public async Task SendAdminUserLockoutEmailAsync(List<string> emailList, string blockedUsername) {
+            var subject = $"User Account Locked: {blockedUsername}";
+            var body = GetAdminUserLockoutEmailTemplate(blockedUsername);
+            var fromAddress = _configuration["Email:FromAddress"];
+
+            foreach (var adminEmail in emailList) {
+                try {
+                    await SendEmailAsync(adminEmail, fromAddress, subject, body);
+                    Console.WriteLine($"Admin lockout notification sent to {adminEmail}");
+                }
+                catch (Exception ex) {
+                    Console.WriteLine($"Failed to send admin lockout notification to {adminEmail}: {ex.Message}");
+                }
+            }
+        }
+
         private string GetActivationEmailTemplate(string activationLink, string activationToken) {
             return $@"
                 <html>
@@ -188,6 +205,20 @@ namespace Sem5Pi2425.Domain.EmailAggr {
                     <p>Thank you for using our services.</p>
                 </body>
                 </html>";
+        }
+
+        private string GetAdminUserLockoutEmailTemplate(string blockedUsername) {
+            return $@"
+        <html>
+        <body>
+            <h2>User Account Locked</h2>
+            <p>This is an automated notification to inform you that a user account has been locked due to multiple failed login attempts.</p>
+            <p><strong>Locked Username:</strong> {blockedUsername}</p>
+            <p>The account has been temporarily locked after 5 unsuccessful login attempts.</p>
+            <p>Please review this account and take appropriate action if necessary.</p>
+            <p>If you have any questions or concerns, please contact the IT department.</p>
+        </body>
+        </html>";
         }
     }
 }

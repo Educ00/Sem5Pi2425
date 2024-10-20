@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Sem5Pi2425.Domain.AppointmentAggr;
-using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Domain.EmailAggr;
 using Sem5Pi2425.Domain.Shared;
+using Sem5Pi2425.Domain.StaffAggr;
 
 namespace Sem5Pi2425.Domain.SystemUserAggr {
     public class UserService {
@@ -14,23 +13,22 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
         private const int MaxLoginAttempts = 5;
         private const int LockoutDurationMinutes = 5;
-        
+
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IUserRepository _repo;
+        private readonly IUserRepository _userRepo;
         private readonly IEmailService _emailService;
-       // private readonly ICurrentUserService _currentUserService;
-        private readonly IPatientRepository _patientrepo;
-        
-        
-        public UserService(IUnitOfWork unitOfWork, IUserRepository repo, IEmailService emailService, IPatientRepository patientrepo) {
+        // private readonly ICurrentUserService _currentUserService;
+
+
+        public UserService(IUnitOfWork unitOfWork, IUserRepository userRepo,
+            IEmailService emailService) {
             this._unitOfWork = unitOfWork;
-            this._repo = repo;
+            this._userRepo = userRepo;
             this._emailService = emailService;
-            this._patientrepo = patientrepo;
         }
 
         public async Task<List<UserDto>> GetAllUsersAsync() {
-            var list = await this._repo.GetAllAsync();
+            var list = await this._userRepo.GetAllAsync();
 
             List<UserDto> listDto = list.ConvertAll(user =>
                 new UserDto(
@@ -47,7 +45,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         }
 
         public async Task<ActionResult<UserDto>> GetUserByIdAsync(UserId id) {
-            var user = await this._repo.GetByIdAsync(id);
+            var user = await this._userRepo.GetByIdAsync(id);
 
             return user == null ? null : new UserDto(user);
         }
@@ -59,19 +57,18 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             var fullname = new FullName(dto.FullName);
             var phoneNumber = new PhoneNumber(dto.PhoneNumber);
             Enum.TryParse(dto.Role, true, out Role role);
-            var user = new User(userId, username, email, fullname, phoneNumber,role);
+            var user = new User(userId, username, email, fullname, phoneNumber, role);
             // Para testar se funfa só tirar o comentário. Deve aparecer.
             //user = new User(userId, new Username("aa"), new Email("teste@gmail.com"), new FullName("Joaquim Da Costa Queiroz"), new PhoneNumber("969999999"), Role.Admin);
-            await this._repo.AddAsync(user);
+            await this._userRepo.AddAsync(user);
             await this._unitOfWork.CommitAsync();
             return new UserDto(user.Id, user.Active, user.Username.ToString(), user.Email, user.FullName.ToString(),
                 user.PhoneNumber.ToString(), user.Role.ToString());
         }
 
-    
 
         public async Task<ActionResult<UserDto>> InactivateUserAsync(string userId) {
-            var user = await this._repo.GetByIdAsync(new UserId(userId));
+            var user = await this._userRepo.GetByIdAsync(new UserId(userId));
 
             if (user == null) {
                 return null;
@@ -79,7 +76,8 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
             user.MarkAsInative();
             await this._unitOfWork.CommitAsync();
-            return new UserDto(user.Id, user.Active, user.Username.ToString(), user.Email, user.FullName.ToString(), user.PhoneNumber.ToString(),
+            return new UserDto(user.Id, user.Active, user.Username.ToString(), user.Email, user.FullName.ToString(),
+                user.PhoneNumber.ToString(),
                 user.Role.ToString());
         }
 
@@ -90,7 +88,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
             Password.IsPasswordStrong(passwordDto.Password);
 
-            var user = await _repo.GetByActivationTokenAsync(passwordDto.Token);
+            var user = await _userRepo.GetByActivationTokenAsync(passwordDto.Token);
 
             if (user == null || user.ActivationTokenExpiry < DateTime.UtcNow) {
                 throw new BusinessRuleValidationException("Invalid or expired token");
@@ -104,6 +102,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
             return new UserDto(user);
         }
+
         /*
         public async Task<UserDto> GetCurrentUserAsync() {
             var userId = new UserId(_currentUserService.UserId);
@@ -119,7 +118,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 */
         public async Task<ActionResult<UserDto>> DeleteUserAsync(UserId userId) {
             Console.WriteLine("USERID SERVICE->" + userId.Value);
-            var user = await this._repo.GetByIdAsync(userId);
+            var user = await this._userRepo.GetByIdAsync(userId);
 
             if (user == null) {
                 return null;
@@ -129,15 +128,16 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
                 throw new BusinessRuleValidationException("It is not possible to delete an active user.");
             }
 
-            this._repo.Remove(user);
+            this._userRepo.Remove(user);
             await this._unitOfWork.CommitAsync();
 
-            return new UserDto(user.Id, user.Active, user.Username.Value, user.Email.Value, user.FullName.Value, user.PhoneNumber.Value,
+            return new UserDto(user.Id, user.Active, user.Username.Value, user.Email.Value, user.FullName.Value,
+                user.PhoneNumber.Value,
                 user.Role.ToString());
         }
 
         public async Task<ActionResult<UserDto>> CreateBackofficeUserAsync(CreateBackofficeUserDto dto) {
-            var existingUser = await _repo.GetByEmailAsync(new Email(dto.Email));
+            var existingUser = await _userRepo.GetByEmailAsync(new Email(dto.Email));
             if (existingUser != null) {
                 throw new BusinessRuleValidationException("Email already registered");
             }
@@ -148,7 +148,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
             var user = User.CreateBackofficeUser(dto);
 
-            user = await _repo.AddAsync(user);
+            user = await _userRepo.AddAsync(user);
             await _emailService.SendActivationEmailAsync(user.Email.Value, user.ActivationToken);
             await _unitOfWork.CommitAsync();
 
@@ -159,9 +159,9 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             var validRoles = new[] { "admin", "doctor", "nurse", "technician" };
             return validRoles.Contains(role.ToLower());
         }
-        
+
         public async Task<UserDto> GetUserByEmailAsync(string email) {
-            var user = await _repo.GetByEmailAsync(email);
+            var user = await _userRepo.GetByEmailAsync(email);
             Console.WriteLine("\n\n--------\nuser->" + user.Email + "<-\n");
             if (user == null) {
                 throw new BusinessRuleValidationException("User not found");
@@ -171,7 +171,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         }
 
         public async Task<UserDto> GetBackofficeUserByEmailAsync(Email email) {
-            var user = await _repo.GetByEmailAsync(email);
+            var user = await _userRepo.GetByEmailAsync(email);
             if (user == null) {
                 throw new BusinessRuleValidationException("User not found");
             }
@@ -184,7 +184,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         }
 
         public async Task RequestPasswordResetAsync(string email) {
-            var user = await _repo.GetByEmailAsync(new Email(email));
+            var user = await _userRepo.GetByEmailAsync(new Email(email));
             if (user == null) {
                 throw new BusinessRuleValidationException("User not found");
             }
@@ -196,7 +196,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         public async Task<UserDto> CompletePasswordReset(UserPasswordDto dto) {
             // TODO: Add some encryption to the password
 
-            var user = await this._repo.GetByPasswordResetToken(dto.Token);
+            var user = await this._userRepo.GetByPasswordResetToken(dto.Token);
 
             if (user == null || user.PasswordRequestTokenExpiry < DateTime.UtcNow) {
                 throw new BusinessRuleValidationException("Invalid or expired token.");
@@ -216,7 +216,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         }
 
         public async Task<UserDto> LoginAsync(LoginDto loginDto) {
-            var user = await _repo.GetByUsername(loginDto.Username);
+            var user = await _userRepo.GetByUsername(loginDto.Username);
 
             if (user == null) {
                 throw new BusinessRuleValidationException("Invalid username or password");
@@ -234,22 +234,32 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             await ResetLoginAttempts(user);
             return new UserDto(user);
         }
-        
+
         private async Task CheckAndResetLockout(User user) {
-            if (user.IsLockedOut && user.LockoutEnd.HasValue && user.LockoutEnd.Value <= DateTime.UtcNow) {
-                user.UnblockLogin();
-                await _unitOfWork.CommitAsync();
+            if (user.IsLockedOut) {
+                if (user.LockoutEnd.HasValue && user.LockoutEnd.Value <= DateTime.UtcNow) {
+                    user.UnblockLogin();
+                    await _unitOfWork.CommitAsync();    
+                }
+                else {
+                    throw new BusinessRuleValidationException("Your account is blocked. Try again in " +
+                                                              user.LockoutEnd);
+                }
+                
             }
         }
-        
+
         private async Task IncrementInvalidLoginAttempts(User user) {
             user.IncrementLoginAttempts();
-            if (user.LoginAttempts >= MaxLoginAttempts) {
+            if (!user.IsLockedOut && user.LoginAttempts >= MaxLoginAttempts) {
                 user.BlockLogin(LockoutDurationMinutes);
+                var adminList = await _userRepo.GetWithRoleAsync(Role.admin);
+                var emailList = adminList.Select(u => u.Email.Value).ToList();
+                await _emailService.SendAdminUserLockoutEmailAsync(emailList, user.Username.Value);
             }
             await _unitOfWork.CommitAsync();
         }
-        
+
         private async Task ResetLoginAttempts(User user) {
             user.ResetLoginAttempts();
             await _unitOfWork.CommitAsync();

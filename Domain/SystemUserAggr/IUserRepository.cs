@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Sem5Pi2425.Domain.Shared;
 
 namespace Sem5Pi2425.Domain.SystemUserAggr {
@@ -9,5 +10,6 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         Task<User> GetByUsername(string dtoUsername);
         Task<User> GetByPhoneNumber(string dtoPhoneNumber);
         Task<User> GetByDeletionToken(string deletionToken);
+        Task<List<User>> GetWithRoleAsync(Role admin);
     }
 }

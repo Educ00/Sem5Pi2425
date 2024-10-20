@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sem5Pi2425.Domain.EmailAggr;
 
@@ -10,4 +11,5 @@ public interface IEmailService {
     Task SendWelcomeEmailAsync(string emailValue);
     Task SendAccountDeletionConfirmationEmailAsync(string emailValue, string deletionToken);
     Task SendAccountDeletionCompletedEmailAsync(string emailValue);
+    Task SendAdminUserLockoutEmailAsync(List<string> emailList, string blockedUsername);
 }
