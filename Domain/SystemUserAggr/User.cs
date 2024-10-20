@@ -107,13 +107,5 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             this.MarkedForDeletion = true;
             this.DeletionToken = null;
         }
-
-        public void UpdateNameFromGoogle(FullName newName) {
-            if (!this.FullName.Equals(newName)) {
-                this.FullName = newName;
-            }
-        }
-        
-        
     }
 }
