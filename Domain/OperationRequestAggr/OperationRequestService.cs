@@ -46,12 +46,9 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
             return operationRequest == null ? null : new OperationRequestDTO(operationRequest);
         }
         
-        public async Task<ActionResult<OperationRequestDTO>> AddOperationRequestAsync(OperationRequestDTO dto) {
+        public async Task<ActionResult<OperationRequestDTO>> AddOperationRequestAsync(OperationRequestDTO dto, StaffDTO doctorStaff) {
             var operationRequest = new OperationRequest(dto.Deadline, dto.Priority, dto.Doctor, dto.Patient, dto.OperationType);
-
-            UserDto doctor = await _userService.GetUserByEmailAsync(dto.Doctor.Email);
-            StaffDTO doctorStaff = await _staffService.GetStaffByUserAsync(doctor);
-
+            
             if (operationRequest.OperationType.NeededSpecializations.Contains(doctorStaff.Specialization.ToString()))
             {
                 await _repo.AddAsync(operationRequest);
