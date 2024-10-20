@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.AppointmentAggr;
 using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Domain.Shared;
+using Sem5Pi2425.Domain.StaffAggr;
 using Sem5Pi2425.Domain.SystemUserAggr;
 
 namespace Sem5Pi2425.Domain.OperationRequestAggr
@@ -14,26 +15,28 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IOperationRequestRepository _repo;
+        private readonly StaffService _staffService;
+        private readonly UserService _userService;
 
-        public OperationRequestService(IUnitOfWork unitOfWork, IOperationRequestRepository repo)
+        public OperationRequestService(IUnitOfWork unitOfWork, IOperationRequestRepository repo, StaffService staffService, UserService userService)
         {
             _unitOfWork = unitOfWork;
             _repo = repo;
+            _staffService = staffService;
+            _userService = userService;
         }
 
         
         public async Task<List<OperationRequestDTO>> GetAllOperationRequestsAsync() {
             var list = await _repo.GetAllAsync();
-
             List<OperationRequestDTO> listDto = list.ConvertAll(operationRequest =>
                 new OperationRequestDTO(
                     operationRequest.Id,
                     operationRequest.Deadline,
                     operationRequest.Priority,
                     operationRequest.Doctor,
-                    operationRequest.Patient));
-            // Para testar se funfa só tirar o comentário. Deve aparecer.
-           // listDTO.Add(new OperationRequestDTO(new Guid(), true, new Username("aa"), new Email("teste@gmail.com"), new FullName("Joaquim Da Costa Queiroz"), new PhoneNumber("969999999"), Role.Admin));
+                    operationRequest.Patient,
+                    operationRequest.OperationType));
             return listDto;
         }
 
@@ -43,20 +46,17 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
             return operationRequest == null ? null : new OperationRequestDTO(operationRequest);
         }
         
-        public async Task<ActionResult<OperationRequestDTO>> AddOperationRequestAsync(OperationRequestDTO dto) {
-            var operationRequest = new OperationRequest(dto.Deadline, dto.Priority, dto.Doctor, dto.Patient);
+        public async Task<ActionResult<OperationRequestDTO>> AddOperationRequestAsync(OperationRequestDTO dto, StaffDTO doctorStaff) {
+            var operationRequest = new OperationRequest(dto.Deadline, dto.Priority, dto.Doctor, dto.Patient, dto.OperationType);
             
-            var userId = UserId.NewUserId();
-            var user = new User(userId, new Username("aa"), new Email("teste@gmail.com"), new FullName("Joaquim Da Costa Queiroz"), new PhoneNumber("969999999"), Role.admin);
-            var emergencyContact = new EmergencyContact(new PhoneNumber("969999999"), new FullName("Maria Da Costa"),
-                new Email("maria@gmail.com"));
-            var patient = new Patient(user, emergencyContact, new List<MedicalCondition>(), new DateOnly(1985,5,10), Gender.female, new List<Appointment>());
-            operationRequest = new OperationRequest(new DateTime(2024, 11, 15), Priority.Urgent, user, patient);
-            
-            await _repo.AddAsync(operationRequest);
-            await _unitOfWork.CommitAsync();
-            return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority, 
-                operationRequest.Doctor, operationRequest.Patient);
+            if (operationRequest.OperationType.NeededSpecializations.Contains(doctorStaff.Specialization.ToString()))
+            {
+                await _repo.AddAsync(operationRequest);
+                await _unitOfWork.CommitAsync();
+                return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority, 
+                    operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
+            }
+            return null;
         }
         
         public async Task<ActionResult<OperationRequestDTO>> DeleteOperationRequestAsync(OperationRequestId operationRequestId) {
@@ -67,9 +67,8 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
             await _unitOfWork.CommitAsync();
 
             return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority, 
-                operationRequest.Doctor, operationRequest.Patient);
+                operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
         }
 
     }
-    
 }

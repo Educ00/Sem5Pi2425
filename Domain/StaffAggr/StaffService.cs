@@ -9,14 +9,14 @@ namespace Sem5Pi2425.Domain.StaffAggr
     public class StaffService : StaffService.IStaffService
     {
         private readonly IStaffRepository _staffRepository;
-        private readonly UserService _userService;
-        private readonly IUnitOfWork _unitOfWork; // Assuming you'll need this
+        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public StaffService(IStaffRepository staffRepository, UserService userService, IUnitOfWork unitOfWork)
+        public StaffService(IStaffRepository staffRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
         {
             _staffRepository = staffRepository;
-            _userService = userService; // Initialize userService here
-            _unitOfWork = unitOfWork; // Initialize unitOfWork here
+            _userRepository = userRepository; 
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ActionResult<StaffDTO>> CreateStaff(StaffDTO dto, UserDto user)
@@ -74,6 +74,12 @@ namespace Sem5Pi2425.Domain.StaffAggr
             await _unitOfWork.CommitAsync();
 
             // Return DTO for the edited staff
+            return new StaffDTO(staff);
+        }
+        
+        public async Task<StaffDTO> GetStaffByUserAsync(UserDto userDto) {
+            var staff = await _staffRepository.GetByIdAsync(userDto.Id);
+
             return new StaffDTO(staff);
         }
 

@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUserAggr;
 using Sem5Pi2425.Domain.OperationRequestAggr;
+using Sem5Pi2425.Domain.StaffAggr;
 
 namespace Sem5Pi2425.Controllers
 {
@@ -14,6 +17,8 @@ namespace Sem5Pi2425.Controllers
     public class OperationRequestController : ControllerBase
     {
         private readonly OperationRequestService _service;
+        private readonly UserService _userService;
+        private readonly StaffService _staffService;
         
         
         public OperationRequestController(OperationRequestService service) {
@@ -50,9 +55,15 @@ namespace Sem5Pi2425.Controllers
         // POST: api/OperationRequest
         [Authorize(Roles = "admin,doctor")]
         [HttpPost]
-        public async Task<ActionResult<UserDto>> CreateOperationRequest(OperationRequestDTO dto) {
+        public async Task<ActionResult<OperationRequestDTO>> CreateOperationRequest(OperationRequestDTO dto) {
             try {
-                var operationRequest = await _service.AddOperationRequestAsync(dto);
+                var loggedUser = HttpContext.User;
+
+                var email = loggedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                UserDto doctor = await _userService.GetUserByEmailAsync(email);
+                StaffDTO doctorStaff = await _staffService.GetStaffByUserAsync(doctor);
+                
+                var operationRequest = await _service.AddOperationRequestAsync(dto, doctorStaff);
                 return Ok(operationRequest);
             }
             catch (BusinessRuleValidationException e) {
