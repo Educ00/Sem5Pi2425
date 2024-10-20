@@ -66,7 +66,7 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
                 new PhoneNumber("2222222"),
                 Role.doctor
             );
-            doctor.SetPassword("12345678A@!");
+            doctor.SetPassword("12345678A@");
             await _userRepository.AddAsync(doctor);
             await _unitOfWork.CommitAsync();
             _logger.LogInformation("Doctor user created successfully");
@@ -82,7 +82,7 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
                 new PhoneNumber("3333333"),
                 Role.nurse
             );
-            nurse.SetPassword("12345678A@!");
+            nurse.SetPassword("12345678A@");
             await _userRepository.AddAsync(nurse);
             await _unitOfWork.CommitAsync();
             _logger.LogInformation("Nurse user created successfully");
@@ -98,7 +98,7 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
                 new PhoneNumber("4444444"),
                 Role.technician
             );
-            technician.SetPassword("12345678A@!");
+            technician.SetPassword("12345678A@");
             await _userRepository.AddAsync(technician);
             await _unitOfWork.CommitAsync();
             _logger.LogInformation("Technician user created successfully");
@@ -114,7 +114,7 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
                 new PhoneNumber("5555555"),
                 Role.patient
             );
-            patientUser.SetPassword("12345678A@!");
+            patientUser.SetPassword("12345678A@");
             await _unitOfWork.CommitAsync();
             await _userRepository.AddAsync(patientUser);
 
