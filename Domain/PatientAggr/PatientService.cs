@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.EmailAggr;
 using Sem5Pi2425.Domain.Shared;
@@ -15,15 +13,16 @@ public class PatientService {
     private readonly IUserRepository _userRepository;
     private readonly IPatientRepository _patientRepository;
     private readonly IEmailService _emailService;
-    
-    public PatientService(IUnitOfWork unitOfWork, IUserRepository userRepository, IPatientRepository patientRepository,IEmailService emailService) {
+
+    public PatientService(IUnitOfWork unitOfWork, IUserRepository userRepository, IPatientRepository patientRepository,
+        IEmailService emailService) {
         this._unitOfWork = unitOfWork;
         this._userRepository = userRepository;
         this._patientRepository = patientRepository;
         this._emailService = emailService;
     }
-    
-    
+
+
     // TODO: remake this method to work with PatientDto
     public async Task<ActionResult<UserDto>> GetUserByIdAsync(UserId id) {
         var patient = await this._patientRepository.GetByIdAsync(id);
@@ -41,31 +40,32 @@ public class PatientService {
         if (temp.Result != null) {
             throw new BusinessRuleValidationException("Username already taken!");
         }
-        
-        var user = new User(UserId.NewUserId(), new Username(registerPatientDto.Username), new Email(registerPatientDto.Email),
+
+        var user = new User(UserId.NewUserId(), new Username(registerPatientDto.Username),
+            new Email(registerPatientDto.Email),
             new FullName(registerPatientDto.FullName), new PhoneNumber(registerPatientDto.PhoneNumber), Role.patient);
-        
+
         var birthDate = DateOnly.Parse(registerPatientDto.BirthDate);
-        var emergencyContact = new EmergencyContact(new PhoneNumber(registerPatientDto.EmergencyContactPhoneNumber), new FullName(registerPatientDto.EmergencyContactFullName), new Email(registerPatientDto.EmergencyContactEmail));
+        var emergencyContact = new EmergencyContact(new PhoneNumber(registerPatientDto.EmergencyContactPhoneNumber),
+            new FullName(registerPatientDto.EmergencyContactFullName),
+            new Email(registerPatientDto.EmergencyContactEmail));
         List<MedicalCondition> medicalConditionsList = [
             new MedicalCondition(registerPatientDto.MedicalConditions)
         ];
         Enum.TryParse(registerPatientDto.Gender, true, out Gender gender);
         var patient = new Patient(user, emergencyContact, medicalConditionsList, birthDate, gender, null);
-        
+
         await this._userRepository.AddAsync(user);
         await this._patientRepository.AddAsync(patient);
         await this._unitOfWork.CommitAsync();
-            
-        return new PatientDto(new UserDto(user), emergencyContact, medicalConditionsList, patient.BirthDate, patient.Gender, patient.AppointmentsHistory);        
-          
+
+        return new PatientDto(new UserDto(user), emergencyContact, medicalConditionsList, patient.BirthDate,
+            patient.Gender, patient.AppointmentsHistory);
     }
-    
-    public async void EditPatientAsync(string id, EditPatientDto updateDto)
-    {
+
+    public async Task<PatientDto> EditPatientAsync(string id, EditPatientDto updateDto) {
         var patient = await _patientRepository.GetByIdAsync(new UserId(id));
-        var originalEmail = patient.User.Email.Value;
-    
+
         patient.User.UpdateFullName(new FullName(updateDto.FullName));
         patient.User.UpdatePhoneNumber(new PhoneNumber(updateDto.PhoneNumber));
         patient.User.UpdateEmail(new Email(updateDto.Email));
@@ -74,10 +74,12 @@ public class PatientService {
             new FullName(updateDto.EmergencyContactFullName),
             new Email(updateDto.EmergencyContactPhoneNumber)
         ));
-        
+
         patient.UpdateMedicalConditions(new List<MedicalCondition>());
-        
+
         await _unitOfWork.CommitAsync();
+        return new PatientDto(new UserDto(patient.User), patient.EmergencyContact, patient.MedicalConditions,
+            patient.BirthDate, patient.Gender, patient.AppointmentsHistory);
     }
 
     public async Task<PatientDto> SignIn(RegisterPatientDto dto) {
@@ -95,10 +97,12 @@ public class PatientService {
         if (temp.Result != null) {
             throw new BusinessRuleValidationException("PhoneNumber already taken!");
         }
+
         var user = new User(UserId.NewUserId(), new Username(dto.Username), new Email(dto.Email),
             new FullName(dto.FullName), new PhoneNumber(dto.PhoneNumber), Role.patient);
         var birthDate = DateOnly.Parse(dto.BirthDate);
-        var emergencyContact = new EmergencyContact(new PhoneNumber(dto.EmergencyContactPhoneNumber), new FullName(dto.EmergencyContactFullName), new Email(dto.EmergencyContactEmail));
+        var emergencyContact = new EmergencyContact(new PhoneNumber(dto.EmergencyContactPhoneNumber),
+            new FullName(dto.EmergencyContactFullName), new Email(dto.EmergencyContactEmail));
         List<MedicalCondition> medicalConditionsList = [
             new MedicalCondition(dto.MedicalConditions)
         ];
@@ -118,8 +122,8 @@ public class PatientService {
         if (user == null) {
             throw new BusinessRuleValidationException("This email does not exist in the database");
         }
-        
-        var patient = await _patientRepository.GetByIdAsync(user.Id);
+
+        var patient = await _patientRepository.GetByIdAsync(new UserId(user.Id.Value));
 
         if (patient == null) {
             throw new BusinessRuleValidationException("Patient not found");
@@ -141,7 +145,7 @@ public class PatientService {
             throw new BusinessRuleValidationException("Invalid deletion token");
         }
 
-        var patient = await _patientRepository.GetByIdAsync(user.Id);
+        var patient = await _patientRepository.GetByIdAsync(new UserId(user.Id.Value));
 
         if (patient == null) {
             throw new BusinessRuleValidationException("Patient not found");
@@ -151,7 +155,7 @@ public class PatientService {
         user.MarkForDeletion();
 
         await _unitOfWork.CommitAsync();
-        
+
         await DeletePatientData(patient);
         return true;
     }
@@ -161,9 +165,66 @@ public class PatientService {
         var email = patient.User.Email.Value;
         _userRepository.Remove(patient.User);
         _patientRepository.Remove(patient);
-        
+
         await _emailService.SendAccountDeletionCompletedEmailAsync(email);
-        
+
         await _unitOfWork.CommitAsync();
+    }
+
+
+    public async Task<PatientDto> EditPatientProfileAsync(string id, EditPatientDto dto) {
+        var patient = await _patientRepository.GetByIdAsync(new UserId(id));
+
+        if (patient == null) {
+            throw new BusinessRuleValidationException("Patient not found");
+        }
+
+        Console.WriteLine(patient.ToString());
+
+        if (patient.User == null) {
+            throw new BusinessRuleValidationException("Patient does not have a user associated");
+        }
+
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var email = dto.Email != null ? new Email(dto.Email) : patient.User.Email;
+        var fullName = dto.FullName != null ? new FullName(dto.FullName) : patient.User.FullName;
+        var phoneNumber = dto.PhoneNumber != null ? new PhoneNumber(dto.PhoneNumber) : patient.User.PhoneNumber;
+
+        if (!DateOnly.TryParse(dto.BirthDate, out var birthDate)) {
+            birthDate = patient.BirthDate;
+        }
+
+        if (!Enum.TryParse<Gender>(dto.Gender, out var gender)) {
+            gender = patient.Gender;
+        }
+
+        var emergencyContactPhoneNumber = dto.EmergencyContactPhoneNumber != null
+            ? new PhoneNumber(dto.EmergencyContactPhoneNumber)
+            : patient.EmergencyContact.PhoneNumber;
+        var emergencyContactFullName = dto.EmergencyContactFullName != null
+            ? new FullName(dto.EmergencyContactFullName)
+            : patient.EmergencyContact.FullName;
+        var emergencyContactEmail = dto.EmergencyContactEmail != null
+            ? new Email(dto.EmergencyContactEmail)
+            : patient.EmergencyContact.Email;
+        var emergencyContact =
+            new EmergencyContact(emergencyContactPhoneNumber, emergencyContactFullName, emergencyContactEmail);
+
+        var medicalConditions = dto.MedicalConditions != null
+            ? new List<MedicalCondition> { new MedicalCondition(dto.MedicalConditions) }
+            : patient.MedicalConditions;
+
+        patient.User.UpdateEmail(email);
+        patient.User.UpdateFullName(fullName);
+        patient.User.UpdatePhoneNumber(phoneNumber);
+        patient.UpdateBirthDate(birthDate);
+        patient.UpdateGender(gender);
+        patient.UpdateEmergencyContact(emergencyContact);
+        patient.UpdateMedicalConditions(medicalConditions);
+
+        await _unitOfWork.CommitAsync();
+        return new PatientDto(new UserDto(patient.User), emergencyContact, medicalConditions, birthDate, gender,
+            patient.AppointmentsHistory);
     }
 }

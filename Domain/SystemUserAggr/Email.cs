@@ -3,32 +3,30 @@ using System.Text.RegularExpressions;
 using Sem5Pi2425.Domain.Shared;
 
 namespace Sem5Pi2425.Domain.SystemUserAggr {
-    public class Email : IValueObject{
+    public class Email : IValueObject {
         private const string EmailPattern = @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$";
 
-        public string Value {
-            get;
-            private set;
-        }
+        public string Value { get; private set; }
 
-        protected Email() {
-        }
+        protected Email() { }
 
         public Email(string value) {
             if (!IsValidEmail(value)) {
                 throw new ArgumentException("Invalid email format");
             }
+
             this.Value = value;
         }
-        private bool IsValidEmail(string email) {
+
+        public static bool IsValidEmail(string email) {
             if (string.IsNullOrWhiteSpace(email)) {
-                throw new ArgumentException("Email cannot be null or blank ->" + email);
+                return false;
             }
 
             try {
                 return Regex.IsMatch(email, EmailPattern);
             }
-            catch(RegexMatchTimeoutException e) {
+            catch (RegexMatchTimeoutException e) {
                 Console.WriteLine(e);
                 throw;
             }

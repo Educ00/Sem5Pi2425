@@ -4,5 +4,7 @@ using Sem5Pi2425.Domain.SystemUserAggr;
 
 namespace Sem5Pi2425.Domain.PatientAggr;
 
-public interface IPatientRepository : IRepository<Patient, UserId> { }
+public interface IPatientRepository : IRepository<Patient, UserId> {
+    Task<Patient> GetByUsernameAsync(string username);
+}
  

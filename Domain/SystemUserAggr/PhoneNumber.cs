@@ -10,14 +10,15 @@ public class PhoneNumber : IValueObject {
     protected PhoneNumber() {}
 
     public PhoneNumber(string value) {
-        if (string.IsNullOrWhiteSpace(value)) {
-            throw new ArgumentException("Phone Number Cannot Be Empty");
-        }
-        if (!value.All(char.IsDigit)) {
-            throw new ArgumentException("Phone Number Must Only Contain Numbers");
+        if (!IsValidPhoneNumber(value)) {
+            throw new BusinessRuleValidationException("Invalid Phone Number!");
         }
         this.Value = value;
     }
 
     public override string ToString() => Value;
+
+    public static bool IsValidPhoneNumber(string value) {
+        return !string.IsNullOrWhiteSpace(value) && value.All(char.IsDigit);
+    }
 }
