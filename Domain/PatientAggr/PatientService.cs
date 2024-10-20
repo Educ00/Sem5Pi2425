@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +61,25 @@ public class PatientService {
           
     }
     
+    public async void EditPatientAsync(string id, EditPatientDto updateDto)
+    {
+        var patient = await _patientRepository.GetByIdAsync(new UserId(id));
+        var originalEmail = patient.User.Email.Value;
+    
+        patient.User.UpdateFullName(new FullName(updateDto.FullName));
+        patient.User.UpdatePhoneNumber(new PhoneNumber(updateDto.PhoneNumber));
+        patient.User.UpdateEmail(new Email(updateDto.Email));
+        patient.UpdateEmergencyContact(new EmergencyContact(
+            new PhoneNumber(updateDto.EmergencyContactPhoneNumber),
+            new FullName(updateDto.EmergencyContactFullName),
+            new Email(updateDto.EmergencyContactPhoneNumber)
+        ));
+        
+        patient.UpdateMedicalConditions(new List<MedicalCondition>());
+        
+        await _unitOfWork.CommitAsync();
+    }
+
     public async Task<PatientDto> SignIn(RegisterPatientDto dto) {
         var temp = _userRepository.GetByEmailAsync(dto.Email);
         if (temp.Result != null) {

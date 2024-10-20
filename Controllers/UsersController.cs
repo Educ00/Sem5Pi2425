@@ -111,7 +111,21 @@ namespace Sem5Pi2425.Controllers {
                     return BadRequest(new { Message = e.Message });
                 }
             }
-
+            
+            //EditPatient:  api/Users/edit/id
+            [Authorize(Roles = "admin")]
+            [HttpPut("edit/{id}")]
+            public async Task<ActionResult<PatientDto>> EditPatientProfile(string id, [FromBody] EditPatientDto editPatientDto) {
+                try
+                {
+                    _patientService.EditPatientAsync(id, editPatientDto);
+                    return Ok();
+                }
+                catch(BusinessRuleValidationException e)
+                {
+                    return BadRequest(new { Message = e.Message });
+                }
+            }
             
             // Inactivate: api/Users/inactivate/id
             [Authorize(Roles = "admin")]

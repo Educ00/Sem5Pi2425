@@ -64,6 +64,21 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             MarkAsActive();
         }
 
+        public void UpdateFullName(FullName fullName)
+        {
+            FullName = fullName;
+        }
+
+        public void UpdatePhoneNumber(PhoneNumber phoneNumber)
+        {
+            PhoneNumber = phoneNumber;
+        }
+
+        public void UpdateEmail(Email email)
+        {
+            Email = email;
+        }
+        
         // Alguns metodos que podem ser uteis para ativar e desativar utilizadores
         public void MarkAsInative() {
             this.Active = false;
@@ -98,5 +113,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
                 this.FullName = newName;
             }
         }
+        
+        
     }
 }

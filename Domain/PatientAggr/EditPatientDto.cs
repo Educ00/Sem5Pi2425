@@ -13,4 +13,18 @@ public class EditPatientDto
     public string EmergencyContactEmail { get; set; }
     public string EmergencyContactPhoneNumber { get; set; }
     public string MedicalConditions { get; set; }
+
+    public EditPatientDto(string email, string fullName, string phoneNumber, string birthDate, string gender, string emergencyContactFullName, string emergencyContactEmail, string emergencyContactPhoneNumber, string medicalConditions)
+    {
+        this.Email = email;
+        this.FullName = fullName;
+        this.PhoneNumber = phoneNumber;
+        this.BirthDate = birthDate;
+        this.Gender = gender;
+        this.EmergencyContactFullName = emergencyContactFullName;
+        this.EmergencyContactEmail = emergencyContactEmail;
+        this.EmergencyContactPhoneNumber = emergencyContactPhoneNumber;
+        this.MedicalConditions = medicalConditions;
+    }
+
 }

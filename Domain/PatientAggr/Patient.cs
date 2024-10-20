@@ -30,6 +30,25 @@ public class Patient : Entity<UserId> {
         this.AppointmentsHistory = appointmentsHistory;
     }
 
+    public void UpdateMedicalConditions(List<MedicalCondition> medicalConditions)
+    {
+        this.MedicalConditions = medicalConditions;
+    }
+    public void UpdateEmergencyContact(EmergencyContact emergencyContact)
+    {
+        EmergencyContact = emergencyContact;
+    }
+
+    public void UpdateBirthDate(DateOnly birthDate)
+    {
+        BirthDate = birthDate;
+    }
+
+    public void UpdateGender(Gender gender)
+    {
+        Gender = gender;
+    }
+    
     public void MarkForDeletion() {
         this.MarkedForDeletion = true;
     }
