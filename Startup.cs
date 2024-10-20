@@ -90,6 +90,10 @@ namespace Sem5Pi2425 {
             services.AddTransient<IAppointmentRepository, AppointmentRepository>();
 
             services.AddTransient<IOperationRequestRepository, OperationRequestRepository>();
+            services.AddTransient<OperationRequestService>();
+            
+            services.AddTransient<IStaffRepository, StaffRepository>();
+            services.AddTransient<StaffService>();
 
             services.AddTransient<IOperationTypeRepository, OperationTypeRepository>();
 
