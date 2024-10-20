@@ -16,6 +16,9 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         public DateTime? PasswordRequestTokenExpiry { get; private set; }
         public string DeletionToken { get; private set; }
         public bool MarkedForDeletion { get; private set; }
+        public int LoginAttempts { get; private set; }
+        public bool IsLockedOut { get; private set; }
+        public DateTime? LockoutEnd { get; private set; }
 
         protected User() { }
 
@@ -106,6 +109,27 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         public void MarkForDeletion() {
             this.MarkedForDeletion = true;
             this.DeletionToken = null;
+        }
+
+        public void IncrementLoginAttempts() {
+            this.LoginAttempts = this.LoginAttempts + 1;
+        }
+
+        public void BlockLogin(int lockoutDurationMinutes) {
+            this.IsLockedOut = true;
+            this.LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
+        }
+
+        public void ResetLoginAttempts() {
+            this.LoginAttempts = 0;
+            this.IsLockedOut = false;
+            this.LockoutEnd = null;
+        }
+
+        public void UnblockLogin() {
+            this.IsLockedOut = false;
+            this.LockoutEnd = null;
+            this.LoginAttempts = 0;
         }
     }
 }

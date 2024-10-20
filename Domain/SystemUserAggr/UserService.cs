@@ -12,6 +12,9 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
     public class UserService {
         // ACRESCENTEM METODOS QUE PRECISEM DE LOGICA E DE MEXER COM OBJETOS DO DOMAIN
 
+        private const int MaxLoginAttempts = 5;
+        private const int LockoutDurationMinutes = 5;
+        
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _repo;
         private readonly IEmailService _emailService;
@@ -219,11 +222,37 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
                 throw new BusinessRuleValidationException("Invalid username or password");
             }
 
+
+            await CheckAndResetLockout(user);
+
             if (!VerifyPassword(loginDto.Password, user.Password.Value)) {
+                await IncrementInvalidLoginAttempts(user);
                 throw new BusinessRuleValidationException("Invalid username or password");
             }
 
+
+            await ResetLoginAttempts(user);
             return new UserDto(user);
+        }
+        
+        private async Task CheckAndResetLockout(User user) {
+            if (user.IsLockedOut && user.LockoutEnd.HasValue && user.LockoutEnd.Value <= DateTime.UtcNow) {
+                user.UnblockLogin();
+                await _unitOfWork.CommitAsync();
+            }
+        }
+        
+        private async Task IncrementInvalidLoginAttempts(User user) {
+            user.IncrementLoginAttempts();
+            if (user.LoginAttempts >= MaxLoginAttempts) {
+                user.BlockLogin(LockoutDurationMinutes);
+            }
+            await _unitOfWork.CommitAsync();
+        }
+        
+        private async Task ResetLoginAttempts(User user) {
+            user.ResetLoginAttempts();
+            await _unitOfWork.CommitAsync();
         }
 
         private bool VerifyPassword(string loginDtoPassword, string userPassword) {
