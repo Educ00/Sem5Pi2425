@@ -8,12 +8,12 @@ using Sem5Pi2425.Domain.SystemUserAggr;
 namespace Sem5Pi2425.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-public class TypeOfOperationController : ControllerBase
+public class OperationTypeController : ControllerBase
 {
     private readonly OperationTypeService _service;
     private readonly UserService _userService;
 
-    public TypeOfOperationController(OperationTypeService operationTypeRepository,UserService userService)
+    public OperationTypeController(OperationTypeService operationTypeRepository,UserService userService)
     {
         this._service = operationTypeRepository;
         this._userService = userService;
