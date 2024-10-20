@@ -1,41 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Sem5Pi2425.Domain.AppointmentAggr;
 using Sem5Pi2425.Domain.SystemUserAggr;
 using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Domain.Shared;
 
-namespace Sem5Pi2425.Infrastructure.BootstrapInfra
-{
-    public class UserBootstrapService
-    {
+namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
+    public class UserBootstrapService {
         private readonly IUserRepository _userRepository;
         private readonly IPatientRepository _patientRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<UserBootstrapService> _logger;
 
-        public UserBootstrapService(IUserRepository userRepository, IPatientRepository patientRepository, IUnitOfWork unitOfWork)
-        {
-            _userRepository = userRepository;
-            _patientRepository = patientRepository;
-            _unitOfWork = unitOfWork;
+        public UserBootstrapService(IUserRepository userRepository, IPatientRepository patientRepository,
+            IUnitOfWork unitOfWork, ILogger<UserBootstrapService> logger) {
+            this._userRepository = userRepository;
+            this._patientRepository = patientRepository;
+            this._unitOfWork = unitOfWork;
+            this._logger = logger;
         }
 
-        public async Task BootstrapInitialUsers()
-        {
-            if (await _userRepository.GetAllAsync() is { Count: > 0 }) return;
+        public async Task BootstrapInitialUsers() {
+            _logger.LogInformation("Starting to bootstrap initial users");
 
-            await CreateAdminUser();
-            await CreateDoctorUser();
-            await CreateNurseUser();
-            await CreateTechnicianUser();
-            await CreatePatientUser();
+            try {
+                await CreateAdminUser();
+                await CreateDoctorUser();
+                await CreateNurseUser();
+                await CreateTechnicianUser();
+                await CreatePatientUser();
 
-            await _unitOfWork.CommitAsync();
+                _logger.LogInformation("Successfully bootstrapped initial users");
+            }
+            catch (Exception e) {
+                _logger.LogError(e, "An error occurred while bootstrapping initial users");
+                throw;
+            }
         }
 
-        private async Task CreateAdminUser()
-        {
+        private async Task CreateAdminUser() {
+            _logger.LogInformation("Creating admin user");
             var admin = new User(
                 UserId.NewUserId(),
                 new Username("admin"),
@@ -46,10 +52,12 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra
             );
             admin.SetPassword("12345678A@");
             await _userRepository.AddAsync(admin);
+            await _unitOfWork.CommitAsync();
+            _logger.LogInformation("Admin user created successfully");
         }
 
-        private async Task CreateDoctorUser()
-        {
+        private async Task CreateDoctorUser() {
+            _logger.LogInformation("Creating doctor user");
             var doctor = new User(
                 UserId.NewUserId(),
                 new Username("doctor"),
@@ -60,10 +68,12 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra
             );
             doctor.SetPassword("12345678A@!");
             await _userRepository.AddAsync(doctor);
+            await _unitOfWork.CommitAsync();
+            _logger.LogInformation("Doctor user created successfully");
         }
 
-        private async Task CreateNurseUser()
-        {
+        private async Task CreateNurseUser() {
+            _logger.LogInformation("Creating nurse user");
             var nurse = new User(
                 UserId.NewUserId(),
                 new Username("nurse"),
@@ -74,10 +84,12 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra
             );
             nurse.SetPassword("12345678A@!");
             await _userRepository.AddAsync(nurse);
+            await _unitOfWork.CommitAsync();
+            _logger.LogInformation("Nurse user created successfully");
         }
 
-        private async Task CreateTechnicianUser()
-        {
+        private async Task CreateTechnicianUser() {
+            _logger.LogInformation("Creating technician user");
             var technician = new User(
                 UserId.NewUserId(),
                 new Username("technician"),
@@ -88,10 +100,12 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra
             );
             technician.SetPassword("12345678A@!");
             await _userRepository.AddAsync(technician);
+            await _unitOfWork.CommitAsync();
+            _logger.LogInformation("Technician user created successfully");
         }
 
-        private async Task CreatePatientUser()
-        {
+        private async Task CreatePatientUser() {
+            _logger.LogInformation("Creating patient user");
             var patientUser = new User(
                 UserId.NewUserId(),
                 new Username("patient"),
@@ -101,6 +115,7 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra
                 Role.patient
             );
             patientUser.SetPassword("12345678A@!");
+            await _unitOfWork.CommitAsync();
             await _userRepository.AddAsync(patientUser);
 
             var patient = new Patient(
@@ -116,6 +131,8 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra
                 new List<Appointment>()
             );
             await _patientRepository.AddAsync(patient);
+            await _unitOfWork.CommitAsync();
+            _logger.LogInformation("Patient user created successfully");
         }
     }
 }
