@@ -44,4 +44,21 @@ public class TypeOfOperationController : ControllerBase
         }
 
     }
+    
+    // Inactivate: api/TypeOfOperation/inactivate/id
+    [HttpPatch("inactivate/{id}")]
+    public async Task<ActionResult<OperationTypeDto>> Inactivate(string id) {
+        try {
+            var user = await _service.InactivateOperationType(id);
+
+            if (user == null) {
+                return NotFound();
+            }
+
+            return Ok(user);
+        }
+        catch (BusinessRuleValidationException e) {
+            return BadRequest(new { Message = e.Message });
+        }
+    }
 }
