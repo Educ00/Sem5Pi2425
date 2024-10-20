@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUserAggr;
@@ -19,13 +20,15 @@ namespace Sem5Pi2425.Controllers
             _service = service;
         }
         
-        // GET: api/OperationRequests
+        // GET: api/OperationRequest
+        [Authorize(Roles = "admin,doctor")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OperationRequestDTO>>> GetAll() {
             return await _service.GetAllOperationRequestsAsync();
         }
         
-        // GET: api/OperationRequests/id
+        // GET: api/OperationRequest/id
+        [Authorize(Roles = "admin,doctor")]
         [HttpGet("{id}")]
         public async Task<ActionResult<OperationRequestDTO>> GetById(string id) {
             try
@@ -44,7 +47,8 @@ namespace Sem5Pi2425.Controllers
             }
         }
         
-        // POST: api/OperationRequests
+        // POST: api/OperationRequest
+        [Authorize(Roles = "admin,doctor")]
         [HttpPost]
         public async Task<ActionResult<UserDto>> CreateOperationRequest(OperationRequestDTO dto) {
             try {
@@ -57,15 +61,16 @@ namespace Sem5Pi2425.Controllers
 
         }
         
-        // DELETE: api/OperationRequests/id
+        // DELETE: api/OperationRequest/id
+        [Authorize(Roles = "admin,doctor")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<OperationRequestDTO>> RemoveOperationRequest(string id) {
             try
             {
-                Console.WriteLine("OPERATIONREQUESTID Controller->" + id);
+                // Console.WriteLine("OPERATIONREQUESTID Controller->" + id);
+                
 
                 var operationRequest = await _service.DeleteOperationRequestAsync(new OperationRequestId(id));
-                Console.WriteLine("Encontrei este operation request->" + operationRequest.Value.Id);
                 if (operationRequest == null) {
                     return NotFound();
                 }
