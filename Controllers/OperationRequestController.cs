@@ -21,8 +21,11 @@ namespace Sem5Pi2425.Controllers
         private readonly StaffService _staffService;
         
         
-        public OperationRequestController(OperationRequestService service) {
+        public OperationRequestController(OperationRequestService service, UserService userService, StaffService staffService) {
             _service = service;
+            _userService = userService;
+            _staffService = staffService;
+
         }
         
         // GET: api/OperationRequest
