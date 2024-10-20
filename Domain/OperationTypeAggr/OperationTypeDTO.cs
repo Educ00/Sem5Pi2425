@@ -11,18 +11,20 @@ public class OperationTypeDto
     public Name Name { get; set; }
     public Description Description { get; set; }
     public List<string> NeededSpecializations { get; set; }
+    public Boolean Active { get; set; }
     
-    public OperationTypeDto(Sem5Pi2425.Domain.OperationTypeAggr.OperationType operationType): this(operationType.Id, operationType.Duration, operationType.Name, operationType.Description, operationType.NeededSpecializations)
+    public OperationTypeDto(Sem5Pi2425.Domain.OperationTypeAggr.OperationType operationType): this(operationType.Id, operationType.Duration, operationType.Name, operationType.Description, operationType.NeededSpecializations, operationType.Active)
     {
     }
 
 
-    public OperationTypeDto(OperationTypeId id, DateTime duration, Name name, Description description, List<string> neededSpecializations)
+    public OperationTypeDto(OperationTypeId id, DateTime duration, Name name, Description description, List<string> neededSpecializations, Boolean active)
     {
         Id = id;
         Duration = duration;
         Name = name;
         Description = description;
         NeededSpecializations = neededSpecializations;
+        Active = active;
     }
 }

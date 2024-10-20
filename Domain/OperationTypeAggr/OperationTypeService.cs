@@ -33,7 +33,8 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
             dto.Duration,
             dto.Name,
             dto.Description,
-            new List<Staff>()
+            new List<Staff>(),
+            dto.Active
         );
         
         await _operationTypeRepository.AddAsync(operationType);
@@ -49,10 +50,27 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
         operationType.Name = dto.Name;
         operationType.Description = dto.Description;
         operationType.NeededSpecializations = dto.NeededSpecializations;
+        operationType.Active = dto.Active;
         
         await _operationTypeRepository.AddAsync(operationType);
         await _unitOfWork.CommitAsync();
         
         return new OperationTypeDto(operationType);
+    }
+    
+    public async Task<ActionResult<OperationTypeDto>> InactivateOperationType(string operationTypeId)
+    {
+        var operationType = await _operationTypeRepository.GetByIdAsync(new OperationTypeId(operationTypeId));
+        
+        if (operationType == null) {
+            return null;
+        }
+        
+        operationType.MarkAsInative();
+        
+        await _unitOfWork.CommitAsync();
+
+        return new OperationTypeDto(operationType.Id, operationType.Duration, 
+            operationType.Name, operationType.Description, operationType.NeededSpecializations, operationType.Active);
     }
 }

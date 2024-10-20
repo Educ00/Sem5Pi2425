@@ -11,15 +11,25 @@ public class OperationType : Entity<OperationTypeId> , IAggregateRoot{
     public Name Name { get; set; }
     public Description Description { get; set; }
     public List<string> NeededSpecializations { get; set; }
+    public Boolean Active { get; set; }
 
     protected OperationType() { }
 
-    public OperationType(DateTime duration, Name name, Description description, List<Staff> neededSpecializations) {
+    public OperationType(DateTime duration, Name name, Description description, List<Staff> neededSpecializations, Boolean active) {
         this.Id = OperationTypeId.NewOperationTypeId();
         this.Duration = duration;
         this.Name = name;
         this.Description = description;
         var temp = neededSpecializations.Select(a => a.Specialization.ToString()).ToList();
         this.NeededSpecializations = temp;
+        this.Active = true;
+    }
+    
+    public void MarkAsInative() {
+        Active = false;
+    }
+
+    public void MarkAsActive() {
+        Active = true;
     }
 }
