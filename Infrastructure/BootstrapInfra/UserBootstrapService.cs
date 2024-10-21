@@ -9,6 +9,8 @@ using Sem5Pi2425.Domain.SystemUserAggr;
 using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.StaffAggr;
+using Sem5Pi2425.Domain.SurgeryRoomAggr;
+using Status = Sem5Pi2425.Domain.AppointmentAggr.Status;
 
 namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
     public class UserBootstrapService {
@@ -16,16 +18,18 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
         private readonly IPatientRepository _patientRepository;
         private readonly IOperationRequestRepository _operationRequestRepository;
         private readonly IStaffRepository _staffRepository;
+        private readonly IAppointmentRepository _appointmentRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<UserBootstrapService> _logger;
 
         public UserBootstrapService(IUserRepository userRepository, IPatientRepository patientRepository,
             IOperationRequestRepository operationRequestRepository, IStaffRepository staffRepository,
-            IUnitOfWork unitOfWork, ILogger<UserBootstrapService> logger) {
+            IAppointmentRepository appointmentRepository, IUnitOfWork unitOfWork, ILogger<UserBootstrapService> logger) {
             _userRepository = userRepository;
             _patientRepository = patientRepository;
             _operationRequestRepository = operationRequestRepository;
             _staffRepository = staffRepository;
+            _appointmentRepository = appointmentRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -172,6 +176,21 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
 
             await _operationRequestRepository.AddAsync(operationRequest);
             await _unitOfWork.CommitAsync();
+            await CreateAppointment(operationRequest);
+
+        }
+
+        private async Task CreateAppointment(OperationRequest operationRequest)
+        {
+            _logger.LogInformation("Creating appointment");
+            RoomNumber roomNumber = new RoomNumber(10);
+            Appointment appointment = new Appointment(Status.scheduled, new DateTime(2024, 11, 25), roomNumber,
+                new List<Staff>(), operationRequest);
+
+            Console.WriteLine(appointment.Id.Value);
+            await _appointmentRepository.AddAsync(appointment);
+            await _unitOfWork.CommitAsync();
+
         }
     }
 }
