@@ -17,6 +17,7 @@ public class Appointment : Entity<AppointmentId>, IAggregateRoot {
     protected Appointment() {}
 
     public Appointment(Status status, DateTime dateTime, RoomNumber roomNumber, List<Staff> assignedStaffList, OperationRequest operationRequest) {
+        Id = AppointmentId.NewAppointmentId();
         this.Status = status;
         this.DateTime = dateTime;
         this.RoomNumber = roomNumber;

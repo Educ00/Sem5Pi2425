@@ -13,7 +13,7 @@ public class AppointmentId : EntityId {
         return (string)ObjValue;
     }
 
-    public AppointmentId NewAppointmentId() {
+    public static AppointmentId NewAppointmentId() {
         return new AppointmentId(Guid.NewGuid().ToString());
     }
 }
