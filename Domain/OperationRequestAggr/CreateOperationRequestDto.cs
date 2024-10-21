@@ -1,3 +1,6 @@
+using Sem5Pi2425.Domain.OperationTypeAggr;
+using Sem5Pi2425.Domain.PatientAggr;
+
 namespace Sem5Pi2425.Domain.OperationRequestAggr
 {
 
@@ -9,11 +12,11 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
         
         public string Doctor { get; set; }
         
-        public string Patient { get; set; }
-        public string OperationType { get; set; }
+        public RegisterPatientDto Patient { get; set; }
+        public CreateOperationTypeDto OperationType { get; set; }
 
         public CreateOperationRequestDto(string deadline, string priority, string doctor,
-            string patient, string operationType) {
+            RegisterPatientDto patient, CreateOperationTypeDto operationType) {
             Deadline = deadline;
             Priority = priority;
             Doctor = doctor;

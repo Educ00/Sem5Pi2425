@@ -58,13 +58,15 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
 
             Enum.TryParse(dto.Priority, true, out Priority priority);
             
-            string[] patientString = dto.Patient.Split(',');
-            string[] operationTypeString = dto.Patient.Split(',');
-
+            //string[] patientString = dto.Patient.Split(',');
+            //string[] operationTypeString = dto.OperationType.Split(',');
+            //Console.WriteLine(patientString[2]);
             var doctor = await _userRepo.GetByEmailAsync(email);
-            var patient = await _patientRepo.GetByIdAsync(new UserId(patientString[0]));
-            var operationType = await _operationTypeRepo.GetByIdAsync(new OperationTypeId(operationTypeString[0]));
+            var patientUser = await _userRepo.GetByEmailAsync(dto.Patient.Email);
+            var patient = await _patientRepo.GetByIdAsync(patientUser.Id);
+            var operationType = await _operationTypeRepo.GetByIdAsync(dto.OperationType.Id);
 
+            Console.WriteLine("AQUI: " + operationType.ToString());
             if (doctor == null) {
                 throw new Exception("Doctor not found");
             }
