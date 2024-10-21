@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -17,15 +16,10 @@ namespace Sem5Pi2425.Controllers
     public class OperationRequestController : ControllerBase
     {
         private readonly OperationRequestService _service;
-        private readonly UserService _userService;
-        private readonly StaffService _staffService;
         
         
-        public OperationRequestController(OperationRequestService service, UserService userService, StaffService staffService) {
+        public OperationRequestController(OperationRequestService service) {
             _service = service;
-            _userService = userService;
-            _staffService = staffService;
-
         }
         
         // GET: api/OperationRequest
@@ -55,19 +49,16 @@ namespace Sem5Pi2425.Controllers
             }
         }
         
-        // POST: api/OperationRequest
+        // POST: api/OperationRequest/create-request
         [Authorize(Roles = "admin,doctor")]
-        [HttpPost]
-        public async Task<ActionResult<OperationRequestDTO>> CreateOperationRequest(OperationRequestDTO dto) {
+        [HttpPost("create-request")]
+        public async Task<ActionResult<OperationRequestDTO>> CreateOperationRequest([FromBody] CreateOperationRequestDto dto) {
             try {
                 var loggedUser = HttpContext.User;
-
                 var email = loggedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-                UserDto doctor = await _userService.GetUserByEmailAsync(email);
-                StaffDTO doctorStaff = await _staffService.GetStaffByUserAsync(doctor);
+               var operationRequest = await _service.AddOperationRequestAsync(dto, email);
                 
-                var operationRequest = await _service.AddOperationRequestAsync(dto, doctorStaff);
-                return Ok(operationRequest);
+               return Ok(operationRequest);
             }
             catch (BusinessRuleValidationException e) {
                 return BadRequest(new { Message = e.Message });
@@ -81,14 +72,10 @@ namespace Sem5Pi2425.Controllers
         public async Task<ActionResult<OperationRequestDTO>> RemoveOperationRequest(string id) {
             try
             {
-                // Console.WriteLine("OPERATIONREQUESTID Controller->" + id);
-                
-
                 var operationRequest = await _service.DeleteOperationRequestAsync(new OperationRequestId(id));
                 if (operationRequest == null) {
                     return NotFound();
                 }
-
                  return Ok(operationRequest);
             }
             catch (BusinessRuleValidationException e) {
