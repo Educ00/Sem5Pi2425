@@ -162,9 +162,16 @@ namespace Sem5Pi2425.Controllers {
 
         // POST: api/Users/backoffice/request-password-reset
         [Authorize(Roles = "nurse,doctor,technician")]
-        [HttpPost("backoffice/request-password-reset")]
-        public async Task<ActionResult> RequestPasswordReset([FromBody] string email) {
+        [HttpGet("backoffice/request-password-reset")]
+        public async Task<ActionResult> RequestPasswordReset() {
             try {
+                var loggedUser = HttpContext.User;
+                
+                if (!loggedUser.Identity.IsAuthenticated) {
+                    return Unauthorized();
+                }
+
+                var email = loggedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
                 await _userUserService.RequestPasswordResetAsync(email);
                 return Ok("Password request sent to " + email);
             }
@@ -178,6 +185,12 @@ namespace Sem5Pi2425.Controllers {
         [HttpPost("backoffice/reset-password")]
         public async Task<ActionResult<UserDto>> ResetPassword([FromBody] UserPasswordDto userPasswordDto) {
             try {
+                var loggedUser = HttpContext.User;
+                
+                if (!loggedUser.Identity.IsAuthenticated) {
+                    return Unauthorized();
+                }
+                
                 var user = await _userUserService.CompletePasswordReset(userPasswordDto);
                 return Ok(user);
             }

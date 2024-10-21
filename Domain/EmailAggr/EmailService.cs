@@ -90,7 +90,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
                 $"{_configuration["AppUrl"]}/api/Users/backoffice/reset-password?token={userPasswordRequestToken}";
             var subject = "Reset Your Password";
             var body = GetPasswordResetEmailTemplate(resetLink);
-            var fromAdress = _configuration["Email:FromAdress"];
+            var fromAdress = _configuration["Email:FromAddress"];
 
             await SendEmailAsync(emailValue, fromAdress, subject, body);
         }

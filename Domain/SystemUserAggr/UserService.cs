@@ -190,6 +190,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             }
 
             user.GeneratePasswordRequestToken();
+            await _unitOfWork.CommitAsync();
             await _emailService.SendBackofficeUserPasswordResetEmailAsync(user.Email.Value, user.PasswordRequestToken);
         }
 
