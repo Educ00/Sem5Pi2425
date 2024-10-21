@@ -15,25 +15,17 @@ namespace Sem5Pi2425.Domain.StaffAggr
         public StaffService(IStaffRepository staffRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
         {
             _staffRepository = staffRepository;
-            _userRepository = userRepository; 
+            _userRepository = userRepository;
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ActionResult<StaffDTO>> CreateStaff(StaffDTO dto, UserDto user)
+        public async Task<ActionResult<StaffDTO>> CreateStaff(StaffDTO dto)
         {
-
-            var userconverted = new User(
-                user.Id,
-                new Username(user.Username),
-                new Email(user.Email),
-                new FullName(user.FullName),
-                new PhoneNumber(user.PhoneNumber),
-                Enum.Parse<Role>(user.Role)
-            );
             
+            var temp = _userRepository.GetByEmailAsync(dto.User.Email);
             // Create Staff object
             var staff = new Staff(
-                userconverted,
+                dto.User,
                 dto.AvailableSlotsList,
                 dto.UniqueIdentifier,
                 dto.Specialization
@@ -47,19 +39,20 @@ namespace Sem5Pi2425.Domain.StaffAggr
             return new StaffDTO(staff);
         }
 
-
         public async Task<ActionResult<StaffDTO>> EditStaff(StaffDTO dto, UserDto user, Specialization specialization)
         {
+            // Convert the string Id from dto to UserId
+            var userId = new UserId(dto.Id);
+
             // Retrieve the current user
             var userconverted = new User(
-                user.Id,
+                userId,
                 new Username(user.Username),
                 new Email(user.Email),
                 new FullName(user.FullName),
                 new PhoneNumber(user.PhoneNumber),
                 Enum.Parse<Role>(user.Role)
             );
-            
 
             // Create Staff object
             var staff = new Staff(
@@ -70,13 +63,13 @@ namespace Sem5Pi2425.Domain.StaffAggr
             );
 
             // Edit staff in the repository
-             _staffRepository.Edit(staff, specialization);
+            _staffRepository.Edit(staff, specialization);
             await _unitOfWork.CommitAsync();
 
             // Return DTO for the edited staff
             return new StaffDTO(staff);
         }
-        
+
         public async Task<StaffDTO> GetStaffByUserAsync(UserDto userDto) {
             var staff = await _staffRepository.GetByIdAsync(userDto.Id);
 
@@ -85,7 +78,7 @@ namespace Sem5Pi2425.Domain.StaffAggr
 
         public interface IStaffService
         {
-            Task<ActionResult<StaffDTO>> CreateStaff(StaffDTO dto, UserDto user);
+            Task<ActionResult<StaffDTO>> CreateStaff(StaffDTO dto);
             Task<ActionResult<StaffDTO>> EditStaff(StaffDTO dto, UserDto user, Specialization specialization);
         }
     }

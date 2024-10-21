@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Sem5Pi2425.Domain.StaffAggr;
 
 using Microsoft.AspNetCore.Mvc;
@@ -21,38 +22,20 @@ namespace Sem5Pi2425.Web.Controllers
             this._service = staffService;
             this._userService = userService;
         }
-        
-        [HttpPost]
+       // [Authorize(Roles = "admin")]
+        [HttpPost("CreateStaff")]
         public async Task<ActionResult<StaffDTO>> CreateStaff(StaffDTO dto) {
             try {
-                // Retrieve all users
-                var users = await _userService.GetAllUsersAsync();
 
-                // Print the list of users
-                Console.WriteLine("Available Users:");
-                foreach (var user in users)
-                {
-                    Console.WriteLine($"ID: {user.Id}, Username: {user.Username}, Email: {user.Email}");
-                }
-
-                // Let the admin choose a user by ID
-                Console.WriteLine("Enter the ID of the user to create staff:");
-                var chosenUserId = Console.ReadLine();
-
-                // Find the chosen user
-                UserDto chosenUser = users.FirstOrDefault(u => u.Id.ToString() == chosenUserId);
-                if (chosenUser == null)
-                {
-                    return BadRequest(new { Message = "Invalid user ID" });
-                }
-                var staff = await _service.CreateStaff(dto,chosenUser);
+                var staff = await _service.CreateStaff(dto);
                 return Ok(staff);
             }
             catch (BusinessRuleValidationException e) {
                 return BadRequest(new { Message = e.Message });
             }
         }
-        [HttpPut]
+      //  [Authorize(Roles = "admin")]
+        [HttpPut("EditStaff")]
         public async Task<ActionResult<StaffDTO>> EditStaff(StaffDTO dto ) {
             try {
                 
@@ -94,7 +77,9 @@ namespace Sem5Pi2425.Web.Controllers
                 return BadRequest(new { Message = e.Message });
             }
         }
-        
+     //   [Authorize(Roles = "admin")]
+
+        [HttpPut("Inactivate")]
         public async Task<ActionResult<StaffDTO>> Inactivate(string id) {
             try {
                 var user = await _userService.InactivateUserAsync(id);
