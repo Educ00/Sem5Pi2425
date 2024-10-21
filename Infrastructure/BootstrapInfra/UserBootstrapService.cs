@@ -19,17 +19,19 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
         private readonly IOperationRequestRepository _operationRequestRepository;
         private readonly IStaffRepository _staffRepository;
         private readonly IAppointmentRepository _appointmentRepository;
+        private readonly IOperationTypeRepository _operationTypeRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<UserBootstrapService> _logger;
 
         public UserBootstrapService(IUserRepository userRepository, IPatientRepository patientRepository,
             IOperationRequestRepository operationRequestRepository, IStaffRepository staffRepository,
-            IAppointmentRepository appointmentRepository, IUnitOfWork unitOfWork, ILogger<UserBootstrapService> logger) {
+            IAppointmentRepository appointmentRepository, IOperationTypeRepository operationTypeRepository, IUnitOfWork unitOfWork, ILogger<UserBootstrapService> logger) {
             _userRepository = userRepository;
             _patientRepository = patientRepository;
             _operationRequestRepository = operationRequestRepository;
             _staffRepository = staffRepository;
             _appointmentRepository = appointmentRepository;
+            _operationTypeRepository = operationTypeRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -175,6 +177,7 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
                 Priority.Urgent, doctor, patient, operationType);
 
             await _operationRequestRepository.AddAsync(operationRequest);
+            await _operationTypeRepository.AddAsync(operationType);
             await _unitOfWork.CommitAsync();
             await CreateAppointment(operationRequest);
 
