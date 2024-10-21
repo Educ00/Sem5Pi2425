@@ -3,34 +3,44 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Sem5Pi2425.Domain.AppointmentAggr;
+using Sem5Pi2425.Domain.OperationRequestAggr;
+using Sem5Pi2425.Domain.OperationTypeAggr;
 using Sem5Pi2425.Domain.SystemUserAggr;
 using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Domain.Shared;
+using Sem5Pi2425.Domain.StaffAggr;
 
 namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
     public class UserBootstrapService {
         private readonly IUserRepository _userRepository;
         private readonly IPatientRepository _patientRepository;
+        private readonly IOperationRequestRepository _operationRequestRepository;
+        private readonly IStaffRepository _staffRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<UserBootstrapService> _logger;
 
         public UserBootstrapService(IUserRepository userRepository, IPatientRepository patientRepository,
+            IOperationRequestRepository operationRequestRepository, IStaffRepository staffRepository,
             IUnitOfWork unitOfWork, ILogger<UserBootstrapService> logger) {
-            this._userRepository = userRepository;
-            this._patientRepository = patientRepository;
-            this._unitOfWork = unitOfWork;
-            this._logger = logger;
+            _userRepository = userRepository;
+            _patientRepository = patientRepository;
+            _operationRequestRepository = operationRequestRepository;
+            _staffRepository = staffRepository;
+            _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task BootstrapInitialUsers() {
             _logger.LogInformation("Starting to bootstrap initial users");
-
             try {
                 await CreateAdminUser();
                 await CreateDoctorUser();
                 await CreateNurseUser();
                 await CreateTechnicianUser();
                 await CreatePatientUser();
+
+                await CreateOperationRequest();
+                await _unitOfWork.CommitAsync();
 
                 _logger.LogInformation("Successfully bootstrapped initial users");
             }
@@ -68,6 +78,15 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
             );
             doctor.SetPassword("12345678A@");
             await _userRepository.AddAsync(doctor);
+
+            var staffDoctor = new Staff(
+                doctor,
+                new List<AvailableSlots>(),
+                UniqueIdentifier.CreateFromString(doctor.Id.ToString()),
+                Specialization.orthopedics
+            );
+            await _staffRepository.AddAsync(staffDoctor);
+
             await _unitOfWork.CommitAsync();
             _logger.LogInformation("Doctor user created successfully");
         }
@@ -133,6 +152,26 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
             await _patientRepository.AddAsync(patient);
             await _unitOfWork.CommitAsync();
             _logger.LogInformation("Patient user created successfully");
+        }
+
+        private async Task CreateOperationRequest() {
+            _logger.LogInformation("Creating operation request");
+            User patientUser = await _userRepository.GetByEmailAsync("patient@example.com");
+            Patient patient = await _patientRepository.GetByIdAsync(patientUser.Id);
+            User doctor = await _userRepository.GetByUsername("doctor");
+            Staff doctorStaff = await _staffRepository.GetByIdAsync(doctor.Id);
+
+            List<Staff> listStaff = new List<Staff>();
+            listStaff.Add(doctorStaff);
+            OperationType operationType = new OperationType(new DateTime(2024, 11, 1), new Name("foot operation"),
+                new Description("description"), listStaff, true);
+            
+            var operationRequest = new OperationRequest(
+                new DateTime(2024, 12, 1),
+                Priority.Urgent, doctor, patient, operationType);
+
+            await _operationRequestRepository.AddAsync(operationRequest);
+            await _unitOfWork.CommitAsync();
         }
     }
 }
