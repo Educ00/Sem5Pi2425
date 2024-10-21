@@ -17,13 +17,16 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
         private readonly IOperationRequestRepository _repo;
         private readonly StaffService _staffService;
         private readonly UserService _userService;
+        private readonly IAppointmentRepository _appointmentRepo;
 
-        public OperationRequestService(IUnitOfWork unitOfWork, IOperationRequestRepository repo, StaffService staffService, UserService userService)
+        public OperationRequestService(IUnitOfWork unitOfWork, IOperationRequestRepository repo, StaffService staffService, 
+            UserService userService, IAppointmentRepository appointmentRepo)
         {
             _unitOfWork = unitOfWork;
             _repo = repo;
             _staffService = staffService;
             _userService = userService;
+            _appointmentRepo = appointmentRepo;
         }
 
         
@@ -62,10 +65,18 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
         public async Task<ActionResult<OperationRequestDTO>> DeleteOperationRequestAsync(OperationRequestId operationRequestId) {
             Console.WriteLine("OPERATIONREQUESTID SERVICE->" + operationRequestId.Value);
             var operationRequest = await _repo.GetByIdAsync(operationRequestId);
-            
-            _repo.Remove(operationRequest);
-            await _unitOfWork.CommitAsync();
+            var appointments = await _appointmentRepo.GetAllAsync();
 
+            foreach (var appointment in appointments)
+            {
+                if (appointment.OperationRequest.Equals(operationRequest))
+                {
+                    throw new Exception("Operation request already scheduled");
+                }
+            } 
+            _repo.Remove(operationRequest); 
+            await _unitOfWork.CommitAsync();
+            
             return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority, 
                 operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
         }
