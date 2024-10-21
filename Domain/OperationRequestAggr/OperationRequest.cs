@@ -7,7 +7,7 @@ using Sem5Pi2425.Domain.SystemUserAggr;
 namespace Sem5Pi2425.Domain.OperationRequestAggr;
 
 public class OperationRequest : Entity<OperationRequestId>, IAggregateRoot {
-    public DateTime Deadline { get; private set; }
+    public DateOnly Deadline { get; private set; }
     public Priority Priority { get; private set; }
     public User Doctor { get; private set; }
     public Patient Patient { get; private set; }
@@ -15,7 +15,7 @@ public class OperationRequest : Entity<OperationRequestId>, IAggregateRoot {
 
     protected OperationRequest() { }
 
-    public OperationRequest(DateTime deadline, Priority priority, User doctor, Patient patient, OperationType operationType) {
+    public OperationRequest(DateOnly deadline, Priority priority, User doctor, Patient patient, OperationType operationType) {
         Id = OperationRequestId.NewOperationRequestId();
         Deadline = deadline;
         Priority = priority;

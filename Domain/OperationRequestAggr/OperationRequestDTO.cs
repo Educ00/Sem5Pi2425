@@ -9,7 +9,7 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
     {
         public OperationRequestId Id { get; set; }
  
-        public DateTime Deadline { get; set; }
+        public DateOnly Deadline { get; set; }
         
         public Priority Priority { get; set; }
         
@@ -21,7 +21,7 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
         
         public OperationRequestDTO(OperationRequest operationRequest) : this(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority, operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType) {}
 
-        public OperationRequestDTO(OperationRequestId id, DateTime deadline, Priority priority, User doctor,
+        public OperationRequestDTO(OperationRequestId id, DateOnly deadline, Priority priority, User doctor,
             Patient patient, OperationType operationType)
         {
             Id = id;
@@ -31,7 +31,5 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
             Patient = patient;
             OperationType = operationType;
         }
-
     }
-
 }

@@ -171,7 +171,7 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
                 new Description("description"), listStaff, true);
             
             var operationRequest = new OperationRequest(
-                new DateTime(2024, 12, 1),
+                new DateOnly(2024,11,25),
                 Priority.Urgent, doctor, patient, operationType);
 
             await _operationRequestRepository.AddAsync(operationRequest);
