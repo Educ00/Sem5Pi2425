@@ -8,4 +8,8 @@ namespace Sem5Pi2425.Infrastructure.OperationTypeInfra;
 
 public class OperationTypeRepository : BaseRepository<OperationType, OperationTypeId>, IOperationTypeRepository{
     public OperationTypeRepository(Sem5Pi2425DbContext context) : base(context.OperationTypes) { }
+    
+    public Task<OperationType> GetByIdAsync(string id) {
+        return Objs.FirstOrDefaultAsync(x => x.Id.Value.Equals(id));
+    }
 }
