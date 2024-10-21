@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.EmailAggr;
+using Sem5Pi2425.Domain.LogAggr;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUserAggr;
+using Type = Sem5Pi2425.Domain.LogAggr.Type;
 
 namespace Sem5Pi2425.Domain.PatientAggr;
 
@@ -13,13 +16,15 @@ public class PatientService {
     private readonly IUserRepository _userRepository;
     private readonly IPatientRepository _patientRepository;
     private readonly IEmailService _emailService;
+    private readonly LogService _logService;
 
     public PatientService(IUnitOfWork unitOfWork, IUserRepository userRepository, IPatientRepository patientRepository,
-        IEmailService emailService) {
+        IEmailService emailService, LogService logService) {
         this._unitOfWork = unitOfWork;
         this._userRepository = userRepository;
         this._patientRepository = patientRepository;
         this._emailService = emailService;
+        this._logService = logService;
     }
 
 
@@ -173,13 +178,12 @@ public class PatientService {
 
 
     public async Task<PatientDto> EditPatientProfileAsync(string id, EditPatientDto dto) {
+        var sendConfirmationEmail = false;
         var patient = await _patientRepository.GetByIdAsync(new UserId(id));
 
         if (patient == null) {
             throw new BusinessRuleValidationException("Patient not found");
         }
-
-        Console.WriteLine(patient.ToString());
 
         if (patient.User == null) {
             throw new BusinessRuleValidationException("Patient does not have a user associated");
@@ -187,33 +191,77 @@ public class PatientService {
 
         ArgumentNullException.ThrowIfNull(dto);
 
-        var email = dto.Email != null ? new Email(dto.Email) : patient.User.Email;
-        var fullName = dto.FullName != null ? new FullName(dto.FullName) : patient.User.FullName;
-        var phoneNumber = dto.PhoneNumber != null ? new PhoneNumber(dto.PhoneNumber) : patient.User.PhoneNumber;
+        var changes = "";
 
-        if (!DateOnly.TryParse(dto.BirthDate, out var birthDate)) {
-            birthDate = patient.BirthDate;
+        Email email = patient.User.Email;
+        if (dto.Email != null) {
+            sendConfirmationEmail = true;
+            email = new Email(dto.Email);
+            changes += "\n" + $"change: email: {patient.User.Email.Value} -> {email.Value}";
         }
 
-        if (!Enum.TryParse<Gender>(dto.Gender, out var gender)) {
-            gender = patient.Gender;
+        FullName fullName = patient.User.FullName;
+        if (dto.FullName != null) {
+            sendConfirmationEmail = true;
+            fullName = new FullName(dto.FullName);
+            changes += "\n" + $"change: fullName: {patient.User.FullName.Value} -> {fullName.Value}";
         }
 
-        var emergencyContactPhoneNumber = dto.EmergencyContactPhoneNumber != null
-            ? new PhoneNumber(dto.EmergencyContactPhoneNumber)
-            : patient.EmergencyContact.PhoneNumber;
-        var emergencyContactFullName = dto.EmergencyContactFullName != null
-            ? new FullName(dto.EmergencyContactFullName)
-            : patient.EmergencyContact.FullName;
-        var emergencyContactEmail = dto.EmergencyContactEmail != null
-            ? new Email(dto.EmergencyContactEmail)
-            : patient.EmergencyContact.Email;
+        PhoneNumber phoneNumber = patient.User.PhoneNumber;
+        if (dto.PhoneNumber != null) {
+            sendConfirmationEmail = true;
+            phoneNumber = new PhoneNumber(dto.PhoneNumber);
+            changes += "\n" + $"change: phoneNumber: {patient.User.PhoneNumber.Value} -> {phoneNumber.Value}";
+        }
+
+        DateOnly birthDate = patient.BirthDate;
+        if (DateOnly.TryParse(dto.BirthDate, out var newBirthDate)) {
+            sendConfirmationEmail = true;
+            birthDate = newBirthDate;
+            changes += "\n" + $"change: birthDate: {patient.BirthDate} -> {birthDate}";
+        }
+
+        Gender gender = patient.Gender;
+        if (Enum.TryParse<Gender>(dto.Gender, out var newGender)) {
+            sendConfirmationEmail = true;
+            gender = newGender;
+            changes += "\n" + $"\nchange: gender: {patient.Gender} -> {gender}";
+        }
+
+        PhoneNumber emergencyContactPhoneNumber = patient.EmergencyContact.PhoneNumber;
+        if (dto.EmergencyContactPhoneNumber != null) {
+            sendConfirmationEmail = true;
+            emergencyContactPhoneNumber = new PhoneNumber(dto.EmergencyContactPhoneNumber);
+            changes +=
+                "\n" + $"change: emergencyContactPhoneNumber: {patient.EmergencyContact.PhoneNumber.Value} -> {emergencyContactPhoneNumber.Value}";
+        }
+
+        FullName emergencyContactFullName = patient.EmergencyContact.FullName;
+        if (dto.EmergencyContactFullName != null) {
+            sendConfirmationEmail = true;
+            emergencyContactFullName = new FullName(dto.EmergencyContactFullName);
+            changes +=
+                "\n" + $"change: emergencyContactFullName: {patient.EmergencyContact.FullName.Value} -> {emergencyContactFullName.Value}";
+        }
+
+        Email emergencyContactEmail = patient.EmergencyContact.Email;
+        if (dto.EmergencyContactEmail != null) {
+            sendConfirmationEmail = true;
+            emergencyContactEmail = new Email(dto.EmergencyContactEmail);
+            changes +=
+                "\n" + $"change: emergencyContactEmail: {patient.EmergencyContact.Email.Value} -> {emergencyContactEmail.Value}";
+        }
+
         var emergencyContact =
             new EmergencyContact(emergencyContactPhoneNumber, emergencyContactFullName, emergencyContactEmail);
 
-        var medicalConditions = dto.MedicalConditions != null
-            ? new List<MedicalCondition> { new MedicalCondition(dto.MedicalConditions) }
-            : patient.MedicalConditions;
+        List<MedicalCondition> medicalConditions = patient.MedicalConditions;
+        if (dto.MedicalConditions != null) {
+            sendConfirmationEmail = true;
+            medicalConditions = new List<MedicalCondition> { new MedicalCondition(dto.MedicalConditions) };
+            changes +=
+                "\n" + $"change: medicalConditions: {string.Join(", ", patient.MedicalConditions.Select(mc => mc.Value))} -> {string.Join(", ", medicalConditions.Select(mc => mc.Value))}";
+        }
 
         patient.User.UpdateEmail(email);
         patient.User.UpdateFullName(fullName);
@@ -222,6 +270,17 @@ public class PatientService {
         patient.UpdateGender(gender);
         patient.UpdateEmergencyContact(emergencyContact);
         patient.UpdateMedicalConditions(medicalConditions);
+
+
+        if (string.IsNullOrEmpty(changes)) {
+            throw new BusinessRuleValidationException("No changes were made to the patient profile.");
+        }
+
+        if (sendConfirmationEmail) {
+            await _emailService.SendProfileChangedConfirmationEmailAsync(patient.User.Email.Value);
+        }
+
+        _logService.AddLogAsync(new LogDto(null, Type.ProfileChange.ToString(), changes, patient.Id.Value, null));
 
         await _unitOfWork.CommitAsync();
         return new PatientDto(new UserDto(patient.User), emergencyContact, medicalConditions, birthDate, gender,

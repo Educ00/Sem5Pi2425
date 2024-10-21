@@ -30,7 +30,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
                 return true;
             }
             catch (Exception ex) {
-                Console.WriteLine($"Failed to configure SMTP client: {ex.Message}");
+                Console.WriteLine($"Failed to configure SMTP client, maybe connect to ISEP DEI with a vpn: {ex.Message}");
                 return false;
             }
         }
@@ -38,6 +38,11 @@ namespace Sem5Pi2425.Domain.EmailAggr {
         public async Task SendEmailAsync(string to, string from, string subject, string body) {
             if (!_isConfigured) {
                 Console.WriteLine($"Email not sent to {to}. Email service is not configured.");
+                return;
+            }
+
+            if (!to.EndsWith("@isep.ipp.pt")) {
+                Console.WriteLine($"Email could not be sent to {to} because it is not a email from isep. The email is valid tho.");
                 return;
             }
 
@@ -143,6 +148,14 @@ namespace Sem5Pi2425.Domain.EmailAggr {
             }
         }
 
+        public async Task SendProfileChangedConfirmationEmailAsync(string emailValue) {
+            var subject = "Profile Updated Confirmation";
+            var body = GetProfileChangedConfirmationEmailTemplate();
+            var fromAddress = _configuration["Email:FromAddress"];
+
+            await SendEmailAsync(emailValue, fromAddress, subject, body);
+        }
+
         private string GetActivationEmailTemplate(string activationLink, string activationToken) {
             return $@"
                 <html>
@@ -219,6 +232,18 @@ namespace Sem5Pi2425.Domain.EmailAggr {
             <p>If you have any questions or concerns, please contact the IT department.</p>
         </body>
         </html>";
+        }
+        
+        private string GetProfileChangedConfirmationEmailTemplate() {
+            return @"
+                <html>
+                <body>
+                    <h2>Profile Update Confirmation</h2>
+                    <p>Your profile has been successfully updated.</p>
+                    <p>If you did not make this change, please contact our support team immediately.</p>
+                    <p>Thank you for using our services!</p>
+                </body>
+                </html>";
         }
     }
 }

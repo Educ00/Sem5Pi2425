@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sem5Pi2425.Domain.AppointmentAggr;
+using Sem5Pi2425.Domain.LogAggr;
 using Sem5Pi2425.Domain.OperationRequestAggr;
 using Sem5Pi2425.Domain.OperationTypeAggr;
 using Sem5Pi2425.Domain.PatientAggr;
@@ -7,6 +8,7 @@ using Sem5Pi2425.Domain.StaffAggr;
 using Sem5Pi2425.Domain.SurgeryRoomAggr;
 using Sem5Pi2425.Domain.SystemUserAggr;
 using Sem5Pi2425.Infrastructure.AppointmentInfra;
+using Sem5Pi2425.Infrastructure.LogInfra;
 using Sem5Pi2425.Infrastructure.OperationRequestInfra;
 using Sem5Pi2425.Infrastructure.OperationTypeInfra;
 using Sem5Pi2425.Infrastructure.PatientInfra;
@@ -25,6 +27,7 @@ namespace Sem5Pi2425.Infrastructure
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<SurgeryRoom> SurgeryRooms { get; set; }
+        public DbSet<Log> Logs { get; set; }
         
         public Sem5Pi2425DbContext(DbContextOptions options) : base(options) {
         }
@@ -38,6 +41,7 @@ namespace Sem5Pi2425.Infrastructure
             modelBuilder.ApplyConfiguration(new PatientEntityConfiguration());
             modelBuilder.ApplyConfiguration(new StaffEntityTypeConfiguration());
             modelBuilder.ApplyConfiguration(new SurgeryRoomEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new LogEntityTypeConfiguration());
         }
     }
 }

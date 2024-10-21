@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Extensions;
+using Sem5Pi2425.Domain.LogAggr;
 using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUserAggr;
@@ -19,10 +20,12 @@ namespace Sem5Pi2425.Controllers {
     public class UsersController : ControllerBase {
         private readonly UserService _userUserService;
         private readonly PatientService _patientService;
+        private readonly LogService _logService;
 
-        public UsersController(UserService userService, PatientService patientService) {
+        public UsersController(UserService userService, PatientService patientService, LogService logService) {
             this._userUserService = userService;
             this._patientService = patientService;
+            this._logService = logService;
         }
 
         // GET: api/Users
@@ -287,6 +290,13 @@ namespace Sem5Pi2425.Controllers {
             catch (BusinessRuleValidationException e) {
                 return BadRequest(new { Message = e.Message });
             }
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpGet("logs")]
+        public async Task<ActionResult<IEnumerable<LogDto>>> GetLogsAsync() {
+            var logs = await this._logService.GetAllAsync();
+            return Ok(logs);
         }
 
         // FALTAM OUTROS METODOS

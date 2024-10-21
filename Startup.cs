@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sem5Pi2425.Domain.AppointmentAggr;
 using Sem5Pi2425.Domain.EmailAggr;
+using Sem5Pi2425.Domain.LogAggr;
 using Sem5Pi2425.Domain.OperationRequestAggr;
 using Sem5Pi2425.Domain.OperationTypeAggr;
 using Sem5Pi2425.Domain.PatientAggr;
@@ -20,6 +21,7 @@ using Sem5Pi2425.Domain.SurgeryRoomAggr;
 using Sem5Pi2425.Domain.SystemUserAggr;
 using Sem5Pi2425.Infrastructure.AppointmentInfra;
 using Sem5Pi2425.Infrastructure.BootstrapInfra;
+using Sem5Pi2425.Infrastructure.LogInfra;
 using Sem5Pi2425.Infrastructure.SystemUser;
 using Sem5Pi2425.Infrastructure.OperationRequestInfra;
 using Sem5Pi2425.Infrastructure.OperationTypeInfra;
@@ -103,6 +105,9 @@ namespace Sem5Pi2425 {
             services.AddTransient<IStaffRepository, StaffRepository>();
 
             services.AddTransient<ISurgeryRoomRepository, SurgeryRoomRepository>();
+
+            services.AddTransient<ILogRepository, LogRepository>();
+            services.AddTransient<LogService>();
         }
     }
 }

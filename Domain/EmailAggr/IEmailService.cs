@@ -12,4 +12,5 @@ public interface IEmailService {
     Task SendAccountDeletionConfirmationEmailAsync(string emailValue, string deletionToken);
     Task SendAccountDeletionCompletedEmailAsync(string emailValue);
     Task SendAdminUserLockoutEmailAsync(List<string> emailList, string blockedUsername);
+    Task SendProfileChangedConfirmationEmailAsync(string emailValue);
 }
