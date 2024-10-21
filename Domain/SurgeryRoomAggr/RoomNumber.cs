@@ -8,9 +8,9 @@ public class RoomNumber : EntityId {
     protected override string createFromString(string text) {
         return text;
     }
-
+    
     public override string AsString() {
-        return (string)ObjValue;
+        return ObjValue.ToString();
     }
 
     public static RoomNumber NewRoomNumber(int number) {
