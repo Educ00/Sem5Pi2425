@@ -171,7 +171,7 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
             listStaff.Add(doctorStaff);
             OperationType operationType = new OperationType(new DateTime(2024, 11, 1), new Name("foot operation"),
                 new Description("description"), listStaff, true);
-            
+            Console.WriteLine("OPERATION TYPE ID: " + operationType.Id.Value);
             var operationRequest = new OperationRequest(
                 new DateOnly(2024,11,25),
                 Priority.Urgent, doctor, patient, operationType);

@@ -6,6 +6,7 @@ using Sem5Pi2425.Domain.AppointmentAggr;
 using Sem5Pi2425.Domain.OperationTypeAggr;
 using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Domain.Shared;
+using Sem5Pi2425.Domain.StaffAggr;
 using Sem5Pi2425.Domain.SystemUserAggr;
 
 namespace Sem5Pi2425.Domain.OperationRequestAggr
@@ -19,9 +20,10 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
         private readonly IOperationTypeRepository _operationTypeRepo;
         private readonly IPatientRepository _patientRepo;
         private readonly IUserRepository _userRepo;
+        private readonly IStaffRepository _staffRepo;
 
         public OperationRequestService(IUnitOfWork unitOfWork, IOperationRequestRepository repo, IAppointmentRepository appointmentRepo, 
-            IOperationTypeRepository operationTypeRepo, IPatientRepository patientRepo, IUserRepository userRepo)
+            IOperationTypeRepository operationTypeRepo, IPatientRepository patientRepo, IUserRepository userRepo, IStaffRepository staffRepository)
         {
             _unitOfWork = unitOfWork;
             _repo = repo;
@@ -29,6 +31,7 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
             _operationTypeRepo = operationTypeRepo;
             _patientRepo = patientRepo;
             _userRepo = userRepo;
+            _staffRepo = staffRepository;
         }
 
         
@@ -58,15 +61,12 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
 
             Enum.TryParse(dto.Priority, true, out Priority priority);
             
-            //string[] patientString = dto.Patient.Split(',');
-            //string[] operationTypeString = dto.OperationType.Split(',');
-            //Console.WriteLine(patientString[2]);
             var doctor = await _userRepo.GetByEmailAsync(email);
+            var doctorStaff = await _staffRepo.GetByIdAsync(doctor.Id);
             var patientUser = await _userRepo.GetByEmailAsync(dto.Patient.Email);
             var patient = await _patientRepo.GetByIdAsync(patientUser.Id);
             var operationType = await _operationTypeRepo.GetByIdAsync(dto.OperationType.Id);
-
-            Console.WriteLine("AQUI: " + operationType.ToString());
+            
             if (doctor == null) {
                 throw new Exception("Doctor not found");
             }
@@ -76,15 +76,18 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr
             if (operationType == null) {
                 throw new Exception("Operation type not found");
             }
+            
+            if (operationType.NeededSpecializations.Contains(doctorStaff.Specialization.ToString())) {
+                Console.WriteLine("OPERATION MATCHES");
+                var operationRequest = new OperationRequest(deadline,priority, doctor, patient, operationType);
 
-            var operationRequest = new OperationRequest(deadline,priority, doctor, patient, operationType);
+                await _repo.AddAsync(operationRequest);
+                await _unitOfWork.CommitAsync();
 
-            await _repo.AddAsync(operationRequest);
-            await _unitOfWork.CommitAsync();
-
-            return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority,
-                operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
-
+                return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority,
+                    operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
+            }
+            throw new Exception("Operation type doesn't match the doctor’s specialization.");
         }
         
         public async Task<ActionResult<OperationRequestDTO>> DeleteOperationRequestAsync(OperationRequestId operationRequestId) {
