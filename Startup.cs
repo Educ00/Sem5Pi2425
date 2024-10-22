@@ -99,6 +99,7 @@ namespace Sem5Pi2425 {
             services.AddTransient<StaffService.IStaffService, StaffService>();
             
             services.AddTransient<IOperationTypeRepository, OperationTypeRepository>();
+            services.AddTransient<OperationTypeService>();
 
             services.AddTransient<IPatientRepository, PatientRepository>();
             services.AddTransient<PatientService>();
