@@ -11,19 +11,32 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
 {
     private readonly IOperationTypeRepository _operationTypeRepository;
     private readonly UserService _userService;
-    private readonly IUnitOfWork _unitOfWork; // Assuming you'll need this
+    private readonly IUnitOfWork _unitOfWork; 
 
     public OperationTypeService(IOperationTypeRepository operationTypeRepository , UserService userService, IUnitOfWork unitOfWork)
     {
         _operationTypeRepository = operationTypeRepository;
-        _userService = userService; // Initialize userService here
-        _unitOfWork = unitOfWork; // Initialize unitOfWork here
+        _userService = userService; 
+        _unitOfWork = unitOfWork; 
     }
     
     public interface IOperationTypeService
     {
         Task<ActionResult<OperationTypeDto>> CreateOperationType(OperationTypeDto dto);
         Task<ActionResult<OperationTypeDto>> EditOperationType(OperationTypeDto dto);
+    }
+    
+    public async Task<List<OperationTypeDto>> GetAllOperationTypesAsync() {
+        var list = await _operationTypeRepository.GetAllAsync();
+        List<OperationTypeDto> listDto = list.ConvertAll(operationRequest =>
+            new OperationTypeDto(
+                operationRequest.Id,
+                operationRequest.Duration,
+                operationRequest.Name,
+                operationRequest.Description,
+                operationRequest.NeededSpecializations,
+                operationRequest.Active));
+        return listDto;
     }
 
     public async Task<ActionResult<OperationTypeDto>> CreateOperationType(OperationTypeDto dto)
@@ -67,7 +80,6 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
         }
         
         operationType.MarkAsInative();
-        
         await _unitOfWork.CommitAsync();
 
         return new OperationTypeDto(operationType.Id, operationType.Duration, 
