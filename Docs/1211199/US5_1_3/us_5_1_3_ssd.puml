@@ -1,0 +1,43 @@
+@startuml
+    skinparam sequenceMessageAlign center
+    title US 5.1.3. As a Patient, I want to register for the healthcare application, \nso that I can create a user profile and book appointments online.
+    
+    actor Patient
+    participant System
+    participant EmailService
+
+    note over Patient,EmailService: Registration Requirements:\n1. All fields are mandatory\n2. Email must be valid format\n3. Phone numbers must contain only digits\n4. Full name must include at least two words\n5. Birth date must be a valid date
+
+    Patient->>System: POST /api/Users/Patient/signin (Registration Data)
+    note right of Patient: Registration Data:\n- username\n- email\n- fullName\n- phoneNumber\n- birthDate\n- gender (male/female)\n- emergencyContactFullName\n- emergencyContactEmail\n- emergencyContactPhoneNumber\n- medicalConditions
+
+    alt Invalid Data
+        System-->>Patient: 400 Bad Request (Validation Error)
+        note over System: Validation Checks:\n1. Email format (@domain.com)\n2. Unique username\n3. Unique email\n4. Valid phone number format\n5. Valid gender enum value
+    else Valid Data
+        System->>System: Validate Registration Data
+        System->>System: Create User Account
+        System->>System: Create Patient Profile
+        System->>EmailService: Send Verification Email
+        note over EmailService: Email Configuration:\n1. Uses SMTP server: frodo.dei.isep.ipp.pt\n2. Port: 25\n3. Only sends to @isep.ipp.pt emails\n4. Token expires in 24 hours
+
+        EmailService-->>Patient: Send Email with Activation Token
+        System-->>Patient: 200 OK (Registration Success)
+    end
+
+    Patient->>System: POST /api/Users/activate (Activation Token + Password)
+    note right of Patient: Activation Data:\n- token\n- password\n- confirmPassword
+
+    alt Invalid Token/Password
+        System-->>Patient: 400 Bad Request (Invalid Token/Password)
+        note over System: Password Requirements:\n1. Minimum length: 10 chars\n2. At least 1 uppercase letter\n3. At least 1 digit\n4. At least 1 special character\n5. Passwords must match
+    else Valid Token/Password
+        System->>System: Validate Token & Password
+        System->>System: Activate Account
+        System->>EmailService: Send Confirmation Email
+        EmailService-->>Patient: Send Confirmation Email
+        System-->>Patient: 200 OK (Account Activated)
+    end
+
+    note over Patient,EmailService: Implementation Notes:\n1. Uses Cookies Authentication\n2. Token expires after 24 hours\n3. Failed activations require new registration\n4. Emergency contact details are validated\n5. Medical conditions stored as list\n6. Gender stored as enum (male/female)
+@enduml
