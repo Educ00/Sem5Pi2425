@@ -69,7 +69,7 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
             var patient = await _patientRepo.GetByIdAsync(patientUser.Id);
             var operationType = await _operationTypeRepo.GetByIdAsync(dto.OperationType.Id);
             
-            if (doctor == null) {
+            if (doctorStaff == null) {
                 throw new BusinessRuleValidationException("Doctor not found");
             }
             if (patient == null) {
@@ -78,8 +78,13 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
             if (operationType == null) {
                 throw new BusinessRuleValidationException("Operation type not found");
             }
+
+            if (!operationType.Active)
+            {
+                throw new BusinessRuleValidationException("Operation type isn't active.");
+            }
             
-            if (operationType.NeededSpecializations.Contains(doctorStaff.Specialization.ToString()) && operationType.Active) {
+            if (operationType.NeededSpecializations.Contains(doctorStaff.Specialization.ToString())) {
                 var operationRequest = new OperationRequest(deadline,priority, doctor, patient, operationType);
 
                     await _repo.AddAsync(operationRequest);
@@ -91,9 +96,8 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
 
                     return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority,
                         operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
-            } 
-            
-            throw new Exception("Operation type doesn't match the doctor’s specialization.");
+            }
+            throw new BusinessRuleValidationException("Operation type doesn't match the doctor’s specialization.");
             
         }
         
