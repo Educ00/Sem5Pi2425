@@ -84,7 +84,7 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
                     await _repo.AddAsync(operationRequest);
                     await _unitOfWork.CommitAsync();
                     log += $"NEW REQUEST ID: {operationRequest.Id.Value}; Deadline: {operationRequest.Deadline.ToString()}; Priority: {operationRequest.Priority}; " +
-                           $"Doctor: {operationRequest.Doctor.Username.Value}; Patient: {operationRequest.Patient.User.Username.Value}; Operation type: {operationRequest.OperationType.Name.Value}"; 
+                           $"Doctor: {operationRequest.Doctor.Username.Value}; Patient: {operationRequest.Patient.User.Username.Value}; Operation type: {operationRequest.OperationType.Name.Value}";
                     _logService.AddLogAsync(new LogDto(null, Type.OperationRequest.ToString(), log, patient.Id.Value, null));
                     return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority,
                         operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
@@ -111,7 +111,6 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
                 } 
                 _repo.Remove(operationRequest); 
                 await _unitOfWork.CommitAsync();
-            
                 return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority, 
                     operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
             }
@@ -122,6 +121,7 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
             var operationRequest = await _repo.GetByIdAsync(id);
             var doctor = await _userRepo.GetByEmailAsync(email);
             var operationDoctorId = operationRequest.Doctor.Id.Value;
+            var log = "";
 
             ArgumentNullException.ThrowIfNull(dto);
 
@@ -141,6 +141,10 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
                 }
             
                 await _unitOfWork.CommitAsync();
+                log += $"OPERATION REQUEST UPDATED: {operationRequest.Id.Value}; Deadline: {operationRequest.Deadline.ToString()}; Priority: {operationRequest.Priority}; " +
+                       $"Doctor: {operationRequest.Doctor.Username.Value}; Patient: {operationRequest.Patient.User.Username.Value}; Operation type: {operationRequest.OperationType.Name.Value}";
+                _logService.AddLogAsync(new LogDto(null, Type.OperationRequest.ToString(), log, operationRequest.Patient.Id.Value, null));
+
                 return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority, 
                     operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
             }
