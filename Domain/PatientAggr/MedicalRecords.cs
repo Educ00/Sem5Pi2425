@@ -1,8 +1,9 @@
 ﻿using System.Linq;
+using Sem5Pi2425.Domain.Shared;
 
 namespace Sem5Pi2425.Domain.PatientAggr;
 
-public class MedicalRecords{
+public class MedicalRecords : IValueObject{
     public MedicalRecordsNumber MedicalRecordsNumber { get; private set; }
     public string Value { get; private set; }
     

@@ -15,6 +15,13 @@ public class MedicalRecordsNumber : IValueObject {
         return medicalRecordsNumber;
     }
 
+    public static MedicalRecordsNumber NewMedicalRecordsByString(string text) {
+        var medicalRecordsNumber = new MedicalRecordsNumber {
+            Value = text
+        };
+        return medicalRecordsNumber;
+    }
+
     public DateTime GetDate() {
         var datePart = Value[..6];
         return DateTime.ParseExact(datePart, "yyyyMM", null);

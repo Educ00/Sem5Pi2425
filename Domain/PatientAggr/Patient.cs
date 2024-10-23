@@ -12,21 +12,22 @@ public class Patient : Entity<UserId> {
     public List<MedicalCondition> MedicalConditions { get; private set; }
     public DateOnly BirthDate { get; private set; }
     public Gender Gender { get; private set; }
-    
     public MedicalRecords MedicalRecords { get; private set; }
     public List<Appointment> AppointmentsHistory { get; private set; }
     public bool MarkedForDeletion { get; private set; }
-    
-    protected Patient(){}
 
-    public Patient(User user, EmergencyContact emergencyContact, List<MedicalCondition> medicalConditions, DateOnly birthDate, Gender  gender, List<Appointment> appointmentsHistory) {
+    protected Patient() { }
+
+    public Patient(User user, EmergencyContact emergencyContact, List<MedicalCondition> medicalConditions,
+        DateOnly birthDate, Gender gender, List<Appointment> appointmentsHistory) {
         if (!user.Role.Equals(Role.patient)) {
             throw new BusinessRuleValidationException("Invalid user!");
         }
-        if (user == null)
-        {
+
+        if (user == null) {
             throw new ArgumentNullException(nameof(user), "A patient must have an associated User.");
         }
+
         this.Id = user.Id;
         this.User = user;
         this.EmergencyContact = emergencyContact;
@@ -34,44 +35,29 @@ public class Patient : Entity<UserId> {
         this.BirthDate = birthDate;
         this.Gender = gender;
         this.AppointmentsHistory = appointmentsHistory;
+        this.MedicalRecords = new MedicalRecords("");
     }
 
-    public Patient(User user, EmergencyContact emergencyContact, List<MedicalCondition> medicalConditions, DateOnly birthDate, Gender gender, MedicalRecords medicalRecords, List<Appointment> appointmentsHistory, bool markedForDeletion)
-    {
-        this.User = user;
-        this.EmergencyContact = emergencyContact;
-        this.MedicalConditions = medicalConditions;
-        this.BirthDate = birthDate;
-        this.Gender = gender;
-        this.MedicalRecords = medicalRecords;
-        this.AppointmentsHistory = appointmentsHistory;
-        this.MarkedForDeletion = markedForDeletion;
-    }
-    public void UpdateEmergencyContact(EmergencyContact emergencyContact)
-    {
+    public void UpdateEmergencyContact(EmergencyContact emergencyContact) {
         EmergencyContact = emergencyContact ?? throw new ArgumentNullException(nameof(emergencyContact));
     }
 
-    public void UpdateBirthDate(DateOnly birthDate)
-    {
+    public void UpdateBirthDate(DateOnly birthDate) {
         BirthDate = birthDate;
     }
 
-    public void UpdateGender(Gender gender)
-    {
+    public void UpdateGender(Gender gender) {
         Gender = gender;
     }
 
-    public void UpdateMedicalRecords(MedicalRecords medicalRecords)
-    {
+    public void UpdateMedicalRecords(MedicalRecords medicalRecords) {
         MedicalRecords = medicalRecords ?? throw new ArgumentNullException(nameof(medicalRecords));
     }
 
-    public void UpdateMedicalConditions(List<MedicalCondition> medicalConditions)
-    {
+    public void UpdateMedicalConditions(List<MedicalCondition> medicalConditions) {
         MedicalConditions = medicalConditions ?? throw new ArgumentNullException(nameof(medicalConditions));
     }
-    
+
     public void MarkForDeletion() {
         this.MarkedForDeletion = true;
     }
