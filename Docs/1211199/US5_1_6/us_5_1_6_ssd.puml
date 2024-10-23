@@ -1,0 +1,48 @@
+@startuml
+    skinparam sequenceMessageAlign center
+    title 5.1.6. As a (non-authenticated) Backoffice User, I want to \nlog in to the system using my credentials, so that I can \naccess the backoffice features according to my assigned role.
+    
+    actor "Backoffice User" as BU
+    participant System as S
+
+    note over BU,S: Authentication endpoint doesn't require prior authentication
+    note over BU,S: Request body: {"Username": string, "Password": string}
+
+    BU->>S: POST /api/Users/login (username, password)
+    
+    note right of S: Password validation rules:\n- Minimum 10 characters\n- At least 1 uppercase\n- At least 1 digit\n- At least 1 special character
+
+    alt Valid Credentials
+        S->>S: Validate credentials
+        S->>S: Create authentication cookie (1h expiry)
+        S-->>BU: 200 OK (User details + auth cookie)
+        note right of S: Cookie includes claims:\n- Name\n- Email\n- NameIdentifier\n- Role
+    else Invalid Credentials (attempts < 5)
+        S->>S: Increment failed login attempts
+        S-->>BU: 400 Bad Request (Invalid credentials)
+        note right of S: LoginAttempts tracked in User entity
+    else Invalid Credentials (attempts = 5)
+        S->>S: Lock account
+        S->>S: Send notification to admin
+        S-->>BU: 400 Bad Request (Account locked)
+        note right of S: Account locked for 5 minutes\nEmail sent to all admin users
+    end
+
+    note over BU,S: Subsequent requests must include authentication cookie
+
+    alt Authenticated Request
+        BU->>S: Request protected resource (with auth cookie)
+        alt Valid Session & Authorized Role
+            S->>S: Verify session & role
+            S-->>BU: 200 OK (Resource)
+            note right of S: Role-specific endpoints:\n- admin: /api/Users/**\n- doctor: /api/OperationRequest/**\n- nurse: Limited access\n- technician: Limited access
+        else Invalid Session
+            S-->>BU: 401 Unauthorized
+            note right of S: Session expires after 1 hour
+        else Unauthorized Role
+            S-->>BU: 403 Forbidden
+            note right of S: [Authorize(Roles = "...")] enforces access
+        end
+    end
+
+@enduml
