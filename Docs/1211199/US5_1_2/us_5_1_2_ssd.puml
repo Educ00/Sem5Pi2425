@@ -1,0 +1,44 @@
+﻿@startuml
+    skinparam sequenceMessageAlign center
+    title US 5.1.2. As a Backoffice User (Admin, Doctor, Nurse, Technician), I want to \nreset my password if I forget it, so that I can regain access to the system securely.
+    
+    actor "Backoffice User" as User
+    participant "System" as System
+    
+    activate User
+    
+    User -> System: GET /api/Users/backoffice/request-password-reset
+    activate System
+    System --> User: Generate reset token and send email
+    deactivate System
+    
+    note right of User
+      Token expires in 24 hours
+      Email contains reset link
+    end note
+    
+    User -> System: POST /api/Users/backoffice/reset-password\n{token, newPassword, confirmPassword}
+    activate System
+    
+    alt Invalid Token
+        System --> User: Error: Invalid or expired token
+    else Passwords Don't Match
+        System --> User: Error: Passwords do not match
+    else Invalid Password Format
+        System --> User: Error: Password doesn't meet complexity requirements
+    else Success
+        System --> User: Password updated successfully
+    end
+    
+    deactivate System
+    
+    note right of System
+      Password Requirements:
+      - Min 10 characters
+      - Min 1 uppercase
+      - Min 1 digit
+      - Min 1 special char
+    end note
+    
+    deactivate User
+@enduml
