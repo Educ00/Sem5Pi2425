@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.Shared;
-using Sem5Pi2425.Domain.SystemUserAggr;
 using Sem5Pi2425.Domain.OperationRequestAggr;
-using Sem5Pi2425.Domain.StaffAggr;
 
 namespace Sem5Pi2425.Controllers
 {
@@ -63,7 +61,6 @@ namespace Sem5Pi2425.Controllers
             catch (BusinessRuleValidationException e) {
                 return BadRequest(new { Message = e.Message });
             }
-
         }
         
         // DELETE: api/OperationRequest/id
@@ -72,7 +69,9 @@ namespace Sem5Pi2425.Controllers
         public async Task<ActionResult<OperationRequestDTO>> RemoveOperationRequest(string id) {
             try
             {
-                var operationRequest = await _service.DeleteOperationRequestAsync(new OperationRequestId(id));
+                var loggedUser = HttpContext.User;
+                var email = loggedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                var operationRequest = await _service.DeleteOperationRequestAsync(new OperationRequestId(id), email);
                 if (operationRequest == null) {
                     return NotFound();
                 }
@@ -81,8 +80,6 @@ namespace Sem5Pi2425.Controllers
             catch (BusinessRuleValidationException e) {
                 return BadRequest(new { Message = e.Message });
             }
-
         }
-
     }
 }
