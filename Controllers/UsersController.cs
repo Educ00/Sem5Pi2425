@@ -190,12 +190,11 @@ namespace Sem5Pi2425.Controllers {
                     pageSize
                 );
 
-                // Instead of returning 204, return empty array with metadata
                 var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
                 return Ok(new
                 {
-                    Data = patients ?? new List<UserDto>(), // Return empty list instead of null
+                    Data = patients ?? new List<UserDto>(), 
                     Pagination = new
                     {
                         CurrentPage = pageNumber,

@@ -286,21 +286,17 @@ public class PatientService {
     int pageNumber = 1, 
     int pageSize = 10)
 {
-    // Get all users first
     var users = await this._userRepository.GetAllAsync();
     Console.WriteLine($"Total users found: {users.Count}"); // Debug log
 
-    // Show all users before filtering
     foreach (var user in users)
     {
         Console.WriteLine($"User: {user.FullName}, Role: {user.Role}, Email: {user.Email}");
     }
 
-    // Filter to only get patients
     var patientUsers = users.Where(u => u.Role == Role.patient).ToList();
     Console.WriteLine($"Patients found: {patientUsers.Count}"); // Debug log
 
-    // Apply search filters if provided
     if (!string.IsNullOrWhiteSpace(searchTerm))
     {
         Console.WriteLine($"Searching for: {searchTerm} in {searchBy}"); // Debug log
@@ -320,17 +316,14 @@ public class PatientService {
       
     }
 
-    // Get total count before pagination
     var totalCount = patientUsers.Count;
 
-    // Apply pagination
     var paginatedUsers = patientUsers
         .Skip((pageNumber - 1) * pageSize)
         .Take(pageSize)
         .ToList();
 
 
-    // Convert to DTOs
     var userDtos = paginatedUsers.Select(user => new UserDto(
         user.Id,
         user.Active,
