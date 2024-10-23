@@ -35,6 +35,12 @@ public class PatientService {
         return patient == null ? null : new UserDto(patient.User);
     }
 
+    public async Task<ActionResult<UserDto>> GetUserByIdAsyncPdto(PatientDto dto) {
+        var patient = await this._patientRepository.GetByIdAsync(dto.User.Id);
+
+        return patient == null ? null : new UserDto(patient.User);
+    }
+    
     public async Task<ActionResult<PatientDto>> AddPatientAsync(RegisterPatientDto registerPatientDto) {
         var temp = _userRepository.GetByEmailAsync(registerPatientDto.Email);
         if (temp.Result != null) {
@@ -214,6 +220,66 @@ public class PatientService {
         throw new BusinessRuleValidationException($"Error updating patient: {ex.Message}");
     }
 }
+    
+    
+    public async Task<bool> RequestAccountDeletionWithoutEmail(string email)
+    {
+        var user = await _userRepository.GetByEmailAsync(email);
+
+        if (user == null)
+        {
+            throw new BusinessRuleValidationException("This email does not exist in the database");
+        }
+
+        var patient = await _patientRepository.GetByIdAsync(new UserId(user.Id.Value));
+
+        if (patient == null)
+        {
+            throw new BusinessRuleValidationException("Patient not found");
+        }
+
+        // Generate and return the deletion token
+        var deletionToken = Guid.NewGuid().ToString();
+        user.SetDeletionToken(deletionToken);
+        await _unitOfWork.CommitAsync();
+    
+        return true;
+    }
+  
+    public async Task<bool> ConfirmAccountDeletionByAdmin(string userId)
+    {
+        var user = await _userRepository.GetByIdAsync(new UserId(userId));
+
+        if (user == null)
+        {
+            throw new BusinessRuleValidationException("User not found");
+        }
+
+        var patient = await _patientRepository.GetByIdAsync(new UserId(userId));
+
+        if (patient == null)
+        {
+            throw new BusinessRuleValidationException("Patient not found");
+        }
+
+        patient.MarkForDeletion();
+        user.MarkForDeletion();
+
+        await _unitOfWork.CommitAsync();
+        await DeletePatientDataByAdmin(patient);
+    
+        return true;
+    }
+    
+    
+    private async Task DeletePatientDataByAdmin(Patient patient)
+    {
+        _userRepository.Remove(patient.User);
+        _patientRepository.Remove(patient);
+    
+        await _unitOfWork.CommitAsync();
+    }
+    
     public async Task<PatientDto> SignIn(RegisterPatientDto dto) {
         var temp = _userRepository.GetByEmailAsync(dto.Email);
         if (temp.Result != null) {

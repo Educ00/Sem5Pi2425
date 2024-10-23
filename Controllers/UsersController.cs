@@ -127,7 +127,64 @@ namespace Sem5Pi2425.Controllers {
                 return BadRequest(new { Message = e.Message });
             }
         }
+        
+        // DELETE: api/Users/admin/delete-patient
+        [Authorize(Roles = "admin")]
+        [HttpDelete("admin/delete-patient")]
+        public async Task<ActionResult> DeletePatient([FromBody] AdminPatientDeletionDto dto)
+        {
+            try
+            {
+                var result = await _patientService.RequestAccountDeletionWithoutEmail(dto.Email);
+                if (!result)
+                {
+                    return BadRequest(new { Message = "Failed to initiate patient deletion process" });
+                }
 
+                var user = await _userUserService.GetUserByEmailAsync(dto.Email);
+                if (user == null)
+                {
+                    return NotFound(new { Message = "Patient not found" });
+                }
+
+                await _patientService.ConfirmAccountDeletionByAdmin(user.Id.Value);
+
+                return Ok(new { 
+                    Message = "Patient deletion completed successfully",
+                    Details = new {
+                        PatientEmail = dto.Email,
+                        DeletedAt = DateTime.UtcNow,
+                        DeletedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    }
+                });
+            }
+            catch (BusinessRuleValidationException e)
+            {
+                return BadRequest(new { Message = e.Message });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, new { Message = "An error occurred while processing the deletion request" });
+            }
+        }
+        
+        // POST: api/Users/Patient/confirm-deletion
+        [Authorize(Roles = "admin")]
+        [HttpPost("Users/Admin/confirm-deletion")]
+        public async Task<ActionResult> ConfirmDeletion([FromBody] ConfirmPatientDeletionDto dto) {
+            try {
+                var result = await _patientService.ConfirmAccountDeletion(dto.Token);
+                if (!result) {
+                    throw new BusinessRuleValidationException("Something failed");
+                }
+
+                return Ok(new { Message = "Account deletion process completed." });
+            }
+            catch (BusinessRuleValidationException e) {
+                return BadRequest(new { Message = e.Message });
+            }
+        }
+        
         // Inactivate: api/Users/inactivate/id
         [Authorize(Roles = "admin")]
         [HttpPatch("inactivate/{id}")]
