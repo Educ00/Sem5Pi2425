@@ -41,6 +41,7 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
             try {
                 await CreateAdminUser();
                 await CreateDoctorUser();
+                await CreateDoctor2User();
                 await CreateNurseUser();
                 await CreateTechnicianUser();
                 await CreatePatientUser();
@@ -95,6 +96,31 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
 
             await _unitOfWork.CommitAsync();
             _logger.LogInformation("Doctor user created successfully");
+        }
+        
+        private async Task CreateDoctor2User() {
+            _logger.LogInformation("Creating doctor2 user");
+            var doctor = new User(
+                UserId.NewUserId(),
+                new Username("doctor2"),
+                new Email("doctor2@example.com"),
+                new FullName("Doctor2 User"),
+                new PhoneNumber("22222222"),
+                Role.doctor
+            );
+            doctor.SetPassword("12345678A@");
+            await _userRepository.AddAsync(doctor);
+
+            var staffDoctor = new Staff(
+                doctor,
+                new List<AvailableSlots>(),
+                UniqueIdentifier.CreateFromString(doctor.Id.ToString()),
+                Specialization.orthopedics
+            );
+            await _staffRepository.AddAsync(staffDoctor);
+
+            await _unitOfWork.CommitAsync();
+            _logger.LogInformation("Doctor2 user created successfully");
         }
 
         private async Task CreateNurseUser() {
@@ -162,25 +188,24 @@ namespace Sem5Pi2425.Infrastructure.BootstrapInfra {
 
         private async Task CreateOperationRequest() {
             _logger.LogInformation("Creating operation request");
-            User patientUser = await _userRepository.GetByEmailAsync("patient@example.com");
-            Patient patient = await _patientRepository.GetByIdAsync(patientUser.Id);
-            User doctor = await _userRepository.GetByUsername("doctor");
-            Staff doctorStaff = await _staffRepository.GetByIdAsync(doctor.Id);
-
-            List<Staff> listStaff = new List<Staff>();
+            var patientUser = await _userRepository.GetByEmailAsync("patient@example.com");
+            var patient = await _patientRepository.GetByIdAsync(patientUser.Id);
+            var doctor = await _userRepository.GetByUsername("doctor");
+            var doctorStaff = await _staffRepository.GetByIdAsync(doctor.Id);
+            
+            var listStaff = new List<Staff>();
             listStaff.Add(doctorStaff);
-            OperationType operationType = new OperationType(new DateTime(2024, 11, 1), new Name("foot operation"),
-                new Description("description"), listStaff, true);
+            
+            var operationType = new OperationType(new DateTime(2024, 11, 1), new Name("foot operation"),
+                new Description("foot or ankle operation"), listStaff, true);
             Console.WriteLine("OPERATION TYPE ID: " + operationType.Id.Value);
             var operationRequest = new OperationRequest(
                 new DateOnly(2024,11,25),
                 Priority.Urgent, doctor, patient, operationType);
-
-            await _operationRequestRepository.AddAsync(operationRequest);
             await _operationTypeRepository.AddAsync(operationType);
+            await _operationRequestRepository.AddAsync(operationRequest);
             await _unitOfWork.CommitAsync();
-            await CreateAppointment(operationRequest);
-
+           // await CreateAppointment(operationRequest);
         }
 
         private async Task CreateAppointment(OperationRequest operationRequest)
