@@ -168,6 +168,62 @@ namespace Sem5Pi2425.Controllers {
             }
         }
         
+        // GET: api/Users/admin/get-patients
+        [Authorize(Roles = "admin")]
+        [HttpGet("admin/get-patients")]
+        public async Task<ActionResult<object>> GetPatientProfiles(
+            [FromQuery] string? searchTerm,
+            [FromQuery] string? searchBy,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize < 1) pageSize = 10;
+                if (pageSize > 50) pageSize = 50;
+
+                var (patients, totalCount) = await this._patientService.GetPatientProfilesAsync(
+                    searchTerm,
+                    searchBy,
+                    pageNumber,
+                    pageSize
+                );
+
+                // Instead of returning 204, return empty array with metadata
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+                return Ok(new
+                {
+                    Data = patients ?? new List<UserDto>(), // Return empty list instead of null
+                    Pagination = new
+                    {
+                        CurrentPage = pageNumber,
+                        PageSize = pageSize,
+                        TotalCount = totalCount,
+                        TotalPages = totalPages,
+                        HasPrevious = pageNumber > 1,
+                        HasNext = pageNumber < totalPages
+                    },
+                    SearchInfo = new
+                    {
+                        SearchTerm = searchTerm,
+                        SearchBy = searchBy
+                    },
+                    Message = patients.Count == 0 ? "No matching records found" : null
+                });
+            }
+            catch (BusinessRuleValidationException e)
+            {
+                return BadRequest(new { Message = e.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPatientProfiles: {ex}"); // Debug log
+                return StatusCode(500, new { Message = "An error occurred while retrieving patient profiles" });
+            }
+        }
+        
         // POST: api/Users/Patient/confirm-deletion
         [Authorize(Roles = "admin")]
         [HttpPost("Users/Admin/confirm-deletion")]
