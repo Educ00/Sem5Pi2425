@@ -1,38 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Mail;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 
 namespace Sem5Pi2425.Domain.EmailAggr {
     public class EmailService : IEmailService {
         private readonly IConfiguration _configuration;
-        private SmtpClient _smtpClient;
         private readonly bool _isConfigured;
+        private readonly string _smtpHost;
+        private readonly int _smtpPort;
+        private readonly string _username;
+        private readonly string _password;
+        private readonly string _fromAddress;
 
         public EmailService(IConfiguration configuration) {
             _configuration = configuration;
-            _isConfigured = TryConfigureSmtpClient();
-        }
-
-        private bool TryConfigureSmtpClient() {
-            try {
-                var host = _configuration["Email:SmtpHost"] ?? "frodo.dei.isep.ipp.pt";
-                var port = int.Parse(_configuration["Email:Port"] ?? "25");
-                var useSsl = port != 25; // Assume SSL for ports other than 25
-
-                _smtpClient = new SmtpClient(host, port) {
-                    EnableSsl = useSsl,
-                    DeliveryMethod = SmtpDeliveryMethod.Network
-                };
-
-                Console.WriteLine($"SMTP client configured. Host: {host}, Port: {port}, UseSSL: {useSsl}");
-                return true;
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Failed to configure SMTP client, maybe connect to ISEP DEI with a vpn: {ex.Message}");
-                return false;
-            }
+            _smtpHost = _configuration["Gmail:SmtpHost"];
+            _smtpPort = int.Parse(_configuration["Gmail:Port"]);
+            _username = _configuration["Gmail:Username"];
+            _password = _configuration["Gmail:Password"];
+            _fromAddress = _configuration["Gmail:FromAddress"];
+            _isConfigured = !string.IsNullOrEmpty(_smtpHost);
         }
 
         public async Task SendEmailAsync(string to, string from, string subject, string body) {
@@ -41,23 +32,28 @@ namespace Sem5Pi2425.Domain.EmailAggr {
                 return;
             }
 
-            if (!to.EndsWith("@isep.ipp.pt")) {
-                Console.WriteLine($"Email could not be sent to {to} because it is not a email from isep. The email is valid tho.");
-                return;
-            }
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse(from));
+            email.To.Add(MailboxAddress.Parse(to));
+            email.Subject = subject;
 
-            var mailMessage = new MailMessage {
-                From = new MailAddress(from),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
+            var builder = new BodyBuilder {
+                HtmlBody = body
             };
 
-            mailMessage.To.Add(to);
+            email.Body = builder.ToMessageBody();
 
             try {
+                using var smtp = new SmtpClient();
+                await smtp.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.Auto);
+
+                if (!string.IsNullOrEmpty(_username) && !string.IsNullOrEmpty(_password)) {
+                    await smtp.AuthenticateAsync(_username, _password);
+                }
+
                 Console.WriteLine($"Attempting to send email to {to}");
-                await _smtpClient.SendMailAsync(mailMessage);
+                await smtp.SendAsync(email);
+                await smtp.DisconnectAsync(true);
                 Console.WriteLine($"Email sent successfully to {to}");
             }
             catch (Exception ex) {
@@ -233,7 +229,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
         </body>
         </html>";
         }
-        
+
         private string GetProfileChangedConfirmationEmailTemplate() {
             return @"
                 <html>
