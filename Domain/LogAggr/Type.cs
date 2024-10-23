@@ -2,5 +2,6 @@
 
 public enum Type {
     ProfileChange,
+    OperationRequest,
     Other
 }
