@@ -81,5 +81,24 @@ namespace Sem5Pi2425.Controllers
                 return BadRequest(new { Message = e.Message });
             }
         }
+        
+        // POST: api/OperationRequest/update/id
+       // [Authorize(Roles = "admin,doctor")]
+        [HttpPatch("update/{id}")]
+        public async Task<ActionResult<OperationRequestDTO>> UpdateOperationRequest(string id, [FromBody] CreateOperationRequestDto dto) {
+            try {
+                var loggedUser = HttpContext.User;
+                var email = loggedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+
+                //var id = loggedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var patient = await _service.UpdateOperationRequestAsync(new OperationRequestId(id), dto, email);
+
+                return Ok(patient);
+            }
+            catch (BusinessRuleValidationException e) {
+                return BadRequest(new { Message = e.Message });
+            }
+        }
     }
 }

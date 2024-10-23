@@ -23,4 +23,12 @@ public class OperationRequest : Entity<OperationRequestId>, IAggregateRoot {
         Patient = patient;
         OperationType = operationType;
     }
+
+    public void UpdateDeadline(DateOnly deadline) {
+        Deadline = deadline;
+    }
+
+    public void UpdatePriority(Priority priority) {
+        Priority = priority;
+    }
 }

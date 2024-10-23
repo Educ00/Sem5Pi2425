@@ -118,5 +118,33 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
             throw new Exception("Doctors can only delete operations requests they created");
         }
 
+        public async Task<ActionResult<OperationRequestDTO>> UpdateOperationRequestAsync(OperationRequestId id, [FromBody] CreateOperationRequestDto dto, string email) {
+            var operationRequest = await _repo.GetByIdAsync(id);
+            var doctor = await _userRepo.GetByEmailAsync(email);
+            var operationDoctorId = operationRequest.Doctor.Id.Value;
+
+            ArgumentNullException.ThrowIfNull(dto);
+
+            if (operationDoctorId.Equals(doctor.Id.Value)) {
+                Enum.TryParse(dto.Priority, true, out Priority priority);
+                var deadline = DateOnly.Parse(dto.Deadline);
+                Console.WriteLine("DEADLINE: " + deadline);
+                Console.WriteLine("PRIORITY: " + priority);
+
+                if (!operationRequest.Deadline.Equals(deadline)) {
+                    operationRequest.UpdateDeadline(deadline);
+                }
+
+                if (!operationRequest.Priority.Equals(priority))
+                {
+                    operationRequest.UpdatePriority(priority);
+                }
+            
+                await _unitOfWork.CommitAsync();
+                return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority, 
+                    operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
+            }
+            throw new Exception("Doctors can only update operations requests they created");
+        }
     }
 }
