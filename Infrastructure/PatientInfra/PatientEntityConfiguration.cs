@@ -39,11 +39,10 @@ public class PatientEntityConfiguration : IEntityTypeConfiguration<Patient> {
         builder.HasMany(p => p.AppointmentsHistory)
             .WithOne()
             .HasForeignKey("AppointmentId");
-
-        builder.OwnsOne(m => m.MedicalRecords, p => {
-            p.Property(mn => mn.MedicalRecordsNumber).HasConversion(
-                a => a.Value,
-                value => MedicalRecordsNumber.NewMedicalRecordsByString(value));
+        
+        builder.OwnsOne(p => p.MedicalRecordsNumber, ec => {
+            ec.Property(e => e.Value);
         });
+
     }
 }

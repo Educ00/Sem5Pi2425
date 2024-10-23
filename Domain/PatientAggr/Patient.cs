@@ -12,7 +12,7 @@ public class Patient : Entity<UserId> {
     public List<MedicalCondition> MedicalConditions { get; private set; }
     public DateOnly BirthDate { get; private set; }
     public Gender Gender { get; private set; }
-    public MedicalRecords MedicalRecords { get; private set; }
+    public MedicalRecordsNumber MedicalRecordsNumber { get; private set; }
     public List<Appointment> AppointmentsHistory { get; private set; }
     public bool MarkedForDeletion { get; private set; }
 
@@ -35,7 +35,7 @@ public class Patient : Entity<UserId> {
         this.BirthDate = birthDate;
         this.Gender = gender;
         this.AppointmentsHistory = appointmentsHistory;
-        this.MedicalRecords = new MedicalRecords("");
+        this.MedicalRecordsNumber = MedicalRecordsNumber.NewMedicalRecordsNumber();
     }
 
     public void UpdateEmergencyContact(EmergencyContact emergencyContact) {
@@ -48,10 +48,6 @@ public class Patient : Entity<UserId> {
 
     public void UpdateGender(Gender gender) {
         Gender = gender;
-    }
-
-    public void UpdateMedicalRecords(MedicalRecords medicalRecords) {
-        MedicalRecords = medicalRecords ?? throw new ArgumentNullException(nameof(medicalRecords));
     }
 
     public void UpdateMedicalConditions(List<MedicalCondition> medicalConditions) {
