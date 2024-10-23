@@ -68,25 +68,152 @@ public class PatientService {
             patient.Gender, patient.AppointmentsHistory);
     }
 
-    public async Task<PatientDto> EditPatientAsync(string id, EditPatientDto updateDto) {
+    public async Task<PatientDto> EditPatientAsync(string id, EditPatientDto updateDto)
+{
+    try 
+    {
         var patient = await _patientRepository.GetByIdAsync(new UserId(id));
+        if (patient == null)
+        {
+            throw new BusinessRuleValidationException($"Patient with ID {id} not found");
+        }
 
-        patient.User.UpdateFullName(new FullName(updateDto.FullName));
-        patient.User.UpdatePhoneNumber(new PhoneNumber(updateDto.PhoneNumber));
-        patient.User.UpdateEmail(new Email(updateDto.Email));
-        patient.UpdateEmergencyContact(new EmergencyContact(
-            new PhoneNumber(updateDto.EmergencyContactPhoneNumber),
-            new FullName(updateDto.EmergencyContactFullName),
-            new Email(updateDto.EmergencyContactPhoneNumber)
-        ));
+        if (patient.User == null)
+        {
+            throw new BusinessRuleValidationException($"User data for patient with ID {id} is missing");
+        }
 
-        patient.UpdateMedicalConditions(new List<MedicalCondition>());
+        Email newEmail = null;
+        Email newEmergencyEmail = null;
+        FullName newFullName = null;
+        PhoneNumber newPhoneNumber = null;
+        EmergencyContact newEmergencyContact = null;
+
+        if (!string.IsNullOrEmpty(updateDto.Email))
+        {
+            try 
+            {
+                newEmail = new Email(updateDto.Email.Trim());
+            }
+            catch (ArgumentException)
+            {
+                throw new BusinessRuleValidationException($"Invalid email format: {updateDto.Email}");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(updateDto.FullName))
+        {
+            try 
+            {
+                newFullName = new FullName(updateDto.FullName.Trim());
+            }
+            catch (ArgumentException ex)
+            {
+                throw new BusinessRuleValidationException($"Invalid full name: {ex.Message}");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(updateDto.PhoneNumber))
+        {
+            try 
+            {
+                newPhoneNumber = new PhoneNumber(updateDto.PhoneNumber.Trim());
+            }
+            catch (ArgumentException ex)
+            {
+                throw new BusinessRuleValidationException($"Invalid phone number: {ex.Message}");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(updateDto.EmergencyContactEmail) &&
+            !string.IsNullOrEmpty(updateDto.EmergencyContactFullName) &&
+            !string.IsNullOrEmpty(updateDto.EmergencyContactPhoneNumber))
+        {
+            try 
+            {
+                newEmergencyEmail = new Email(updateDto.EmergencyContactEmail.Trim());
+                var emergencyFullName = new FullName(updateDto.EmergencyContactFullName.Trim());
+                var emergencyPhone = new PhoneNumber(updateDto.EmergencyContactPhoneNumber.Trim());
+                
+                newEmergencyContact = new EmergencyContact(
+                    emergencyPhone,
+                    emergencyFullName,
+                    newEmergencyEmail
+                );
+            }
+            catch (ArgumentException ex)
+            {
+                throw new BusinessRuleValidationException($"Invalid emergency contact information: {ex.Message}");
+            }
+        }
+
+        if (newEmail != null)
+        {
+            patient.User.UpdateEmail(newEmail);
+        }
+
+        if (newFullName != null)
+        {
+            patient.User.UpdateFullName(newFullName);
+        }
+
+        if (newPhoneNumber != null)
+        {
+            patient.User.UpdatePhoneNumber(newPhoneNumber);
+        }
+
+        if (newEmergencyContact != null)
+        {
+            patient.UpdateEmergencyContact(newEmergencyContact);
+        }
+
+        if (!string.IsNullOrEmpty(updateDto.BirthDate))
+        {
+            if (DateOnly.TryParse(updateDto.BirthDate, out var birthDate))
+            {
+                patient.UpdateBirthDate(birthDate);
+            }
+            else
+            {
+                throw new BusinessRuleValidationException("Invalid birth date format. Use format: YYYY-MM-DD");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(updateDto.Gender))
+        {
+            if (Enum.TryParse<Gender>(updateDto.Gender, true, out var gender))
+            {
+                patient.UpdateGender(gender);
+            }
+            else
+            {
+                throw new BusinessRuleValidationException("Invalid gender. Use 'Male' or 'Female'");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(updateDto.MedicalConditions))
+        {
+            var medicalConditions = updateDto.MedicalConditions
+                .Split(',')
+                .Select(condition => new MedicalCondition(condition.Trim()))
+                .ToList();
+            patient.UpdateMedicalConditions(medicalConditions);
+        }
 
         await _unitOfWork.CommitAsync();
+
         return new PatientDto(new UserDto(patient.User), patient.EmergencyContact, patient.MedicalConditions,
             patient.BirthDate, patient.Gender, patient.AppointmentsHistory);
     }
-
+    catch (BusinessRuleValidationException)
+    {
+        throw;
+    }
+    catch (Exception ex)
+    {
+        throw new BusinessRuleValidationException($"Error updating patient: {ex.Message}");
+    }
+}
     public async Task<PatientDto> SignIn(RegisterPatientDto dto) {
         var temp = _userRepository.GetByEmailAsync(dto.Email);
         if (temp.Result != null) {

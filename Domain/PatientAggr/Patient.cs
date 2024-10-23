@@ -21,6 +21,10 @@ public class Patient : Entity<UserId> {
         if (!user.Role.Equals(Role.patient)) {
             throw new BusinessRuleValidationException("Invalid user!");
         }
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user), "A patient must have an associated User.");
+        }
         this.Id = user.Id;
         this.User = user;
         this.EmergencyContact = emergencyContact;
@@ -30,13 +34,9 @@ public class Patient : Entity<UserId> {
         this.AppointmentsHistory = appointmentsHistory;
     }
 
-    public void UpdateMedicalConditions(List<MedicalCondition> medicalConditions)
-    {
-        this.MedicalConditions = medicalConditions;
-    }
     public void UpdateEmergencyContact(EmergencyContact emergencyContact)
     {
-        EmergencyContact = emergencyContact;
+        EmergencyContact = emergencyContact ?? throw new ArgumentNullException(nameof(emergencyContact));
     }
 
     public void UpdateBirthDate(DateOnly birthDate)
@@ -47,6 +47,11 @@ public class Patient : Entity<UserId> {
     public void UpdateGender(Gender gender)
     {
         Gender = gender;
+    }
+
+    public void UpdateMedicalConditions(List<MedicalCondition> medicalConditions)
+    {
+        MedicalConditions = medicalConditions ?? throw new ArgumentNullException(nameof(medicalConditions));
     }
     
     public void MarkForDeletion() {

@@ -69,17 +69,18 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
         public void UpdateFullName(FullName fullName)
         {
-            FullName = fullName;
+            FullName = fullName ;
         }
 
         public void UpdatePhoneNumber(PhoneNumber phoneNumber)
         {
-            PhoneNumber = phoneNumber;
+            PhoneNumber = phoneNumber ;
         }
 
         public void UpdateEmail(Email email)
         {
-            Email = email;
+            Console.WriteLine("Erro");
+            Email = new Email(email);
         }
         
         // Alguns metodos que podem ser uteis para ativar e desativar utilizadores
