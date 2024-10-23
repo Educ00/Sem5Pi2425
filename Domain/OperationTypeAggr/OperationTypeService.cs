@@ -1,22 +1,21 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Sem5Pi2425.Domain.OperationRequestAggr;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.StaffAggr;
-using Sem5Pi2425.Domain.SystemUserAggr;
 
 namespace Sem5Pi2425.Domain.OperationTypeAggr;
 
 public class OperationTypeService : OperationTypeService.IOperationTypeService
 {
     private readonly IOperationTypeRepository _operationTypeRepository;
-    private readonly UserService _userService;
     private readonly IUnitOfWork _unitOfWork; 
 
-    public OperationTypeService(IOperationTypeRepository operationTypeRepository , UserService userService, IUnitOfWork unitOfWork)
+    public OperationTypeService(IOperationTypeRepository operationTypeRepository, IUnitOfWork unitOfWork)
     {
         _operationTypeRepository = operationTypeRepository;
-        _userService = userService; 
         _unitOfWork = unitOfWork; 
     }
     
@@ -84,5 +83,23 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
 
         return new OperationTypeDto(operationType.Id, operationType.Duration, 
             operationType.Name, operationType.Description, operationType.NeededSpecializations, operationType.Active);
+    }
+    
+    public async Task<List<OperationTypeDto>> SearchOperationTypes(string name, string specialization, bool? status) {
+        var operationTypes = await _operationTypeRepository.GetAllAsync();
+
+        if (!string.IsNullOrEmpty(name)) {
+            operationTypes = operationTypes.Where(ot => ot.Name.Value.Contains(name)).ToList();
+        }
+
+        if (!string.IsNullOrEmpty(specialization)) {
+            operationTypes = operationTypes.Where(ot => ot.NeededSpecializations.Contains(specialization)).ToList();
+        }
+
+        if (status.HasValue) {
+            operationTypes = operationTypes.Where(ot => ot.Active == status.Value).ToList();
+        }
+
+        return operationTypes.Select(ot => new OperationTypeDto(ot)).ToList();
     }
 }

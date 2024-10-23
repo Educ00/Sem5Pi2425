@@ -61,6 +61,7 @@ namespace Sem5Pi2425.Controllers
         }
 
         // Inactivate: api/OperationType/inactivate/id
+        [Authorize(Roles = "admin")]
         [HttpPatch("inactivate/{id}")]
         public async Task<ActionResult<OperationTypeDto>> Inactivate(string id) {
             try {
@@ -73,6 +74,14 @@ namespace Sem5Pi2425.Controllers
             catch (BusinessRuleValidationException e) {
                 return BadRequest(new { Message = e.Message });
             }
+        }
+        
+        // GET: api/OperationType/search
+        [Authorize(Roles = "admin")]
+        [HttpGet("search")]
+        public async Task<ActionResult<List<OperationTypeDto>>> SearchOperationTypes([FromQuery] string name, [FromQuery] string specialization, [FromQuery] bool? status) {
+            var results = await _service.SearchOperationTypes(name, specialization, status);
+            return Ok(results);
         }
     }
 }
