@@ -1,0 +1,24 @@
+@startuml
+    skinparam sequenceMessageAlign center
+    title 5.1.5. As a Patient, I want to delete my account and all associated data\nso that I can exercise my right to be forgotten as per GDPR.
+    actor Patient
+    participant System
+    
+    Patient->>System: POST /api/Users/Patient/request-deletion (email)
+    alt Invalid Request
+        System-->>Patient: 400 Bad Request
+    else Valid Request
+        System-->>Patient: 200 OK (Request Received)
+        System->>Patient: Send Confirmation Email
+    end
+
+    Patient->>System: POST /api/Users/Patient/confirm-deletion (token)
+    alt Invalid Token
+        System-->>Patient: 400 Bad Request (Invalid/Expired Token)
+    else Valid Token
+        System-->>Patient: 200 OK (Deletion Started)
+        Note over System: Delete user data
+        Note over System: Log deletion for GDPR
+        System->>Patient: Send Deletion Completion Email
+    end
+@enduml
