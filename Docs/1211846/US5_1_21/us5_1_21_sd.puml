@@ -1,11 +1,46 @@
 ﻿@startuml
-'https://plantuml.com/sequence-diagram
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-autonumber
+title 5.1.21 As an Admin, I want to edit existing operation types, so that I can update or correct information about the procedure.
 
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
+actor "Admin" as Admin
+participant "OperationTypeUI" as UI <<UI>>
+participant "OperationTypeController" as Controller <<controller>>
+entity "OperationTypeDTO" as OperationTypeDTO <<dto>>
+participant "OperationTypeService" as Service <<service>>
+participant "OperationTypeRepository" as Repo <<repository>>
 
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+activate Admin
+    Admin -> UI : asks to edit an operation type
+    deactivate Admin
+    activate UI
+            UI -> Admin: demands to edit an operation type
+    deactivate UI
+    activate Admin
+        Admin -> UI : inserts the information
+        deactivate Admin
+    activate UI
+    UI -> Controller: demands for operation type edit (PUT)
+    deactivate UI
+    activate Controller
+        Controller -> OperationTypeDTO: instantiates OperationTypeDTO
+        Controller -> Service: EditOperationType(OperationTypeDTO)
+        deactivate Controller
+        activate Service
+            Service -> Repo: edits an operationType
+            activate Repo
+            Repo --> Service: returns matching operationType
+            deactivate Repo
+        Service --> Controller: returns operationsType data
+        deactivate Service
+        activate Controller
+        
+Controller --> UI: returns operationType data
+activate UI
+UI->Admin : shows success
+deactivate Controller
+
+
 @enduml

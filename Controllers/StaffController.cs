@@ -24,7 +24,7 @@ namespace Sem5Pi2425.Web.Controllers
         }
        // [Authorize(Roles = "admin")]
         [HttpPost("CreateStaff")]
-        public async Task<ActionResult<StaffDTO>> CreateStaff(StaffDTO dto) {
+        public async Task<ActionResult<StaffDTO>> CreateStaff([FromBody] StaffCreateDTO dto) {
             try {
 
                 var staff = await _service.CreateStaff(dto);
@@ -36,7 +36,7 @@ namespace Sem5Pi2425.Web.Controllers
         }
       //  [Authorize(Roles = "admin")]
         [HttpPut("EditStaff")]
-        public async Task<ActionResult<StaffDTO>> EditStaff(StaffDTO dto ) {
+        public async Task<ActionResult<StaffDTO>> EditStaff(string id,[FromBody] StaffEditDto dto ) {
             try {
                 
                 // Retrieve all users
@@ -70,7 +70,7 @@ namespace Sem5Pi2425.Web.Controllers
                 }
                 
                 
-                var staff = await _service.EditStaff(dto,chosenUser,chosenSpecialization);
+                var staff = await _service.EditStaff(id,dto);
                 return Ok(staff);
             }
             catch (BusinessRuleValidationException e) {

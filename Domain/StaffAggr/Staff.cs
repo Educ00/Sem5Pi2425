@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUserAggr;
 
@@ -24,4 +25,18 @@ public class Staff : Entity<UserId> {
         this.Specialization = specialization;
     }
 
+    public void UpdateUniqueIdentifier(UniqueIdentifier uniqueIdentifier) {
+        UniqueIdentifier = uniqueIdentifier ?? throw new ArgumentNullException(nameof(uniqueIdentifier));
+    }
+    
+    public void UpdateAvailableSlots(List<AvailableSlots> availableSlots) {
+        AvailableSlots = availableSlots ?? throw new ArgumentNullException(nameof(availableSlots));
+    }
+    
+    public void UpdateSpecialization(Specialization specialization) {
+        Specialization = specialization;
+    }
+    
+
+    
 }

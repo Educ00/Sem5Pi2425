@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sem5Pi2425.Domain.Shared;
 
 namespace Sem5Pi2425.Domain.StaffAggr;
@@ -13,4 +14,11 @@ public class AvailableSlots : IValueObject{
         this.Start = start;
         this.End = end;
     }
+
+    public AvailableSlots(List<string> dtoAvailableSlotsList)
+    {
+        this.Value = dtoAvailableSlotsList;
+    }
+
+    public List<string> Value { get; set; }
 }

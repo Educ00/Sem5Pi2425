@@ -29,8 +29,8 @@ namespace Sem5Pi2425.Controllers
             return await _service.GetAllOperationTypesAsync();
         }
 
-        [HttpPost]
-        public async Task<ActionResult<OperationTypeDto>> AddOperationType(OperationTypeDto dto)
+        [HttpPost("add")]
+        public async Task<ActionResult<OperationTypeDto>> AddOperationType(CreateOperationTypeDto dto)
         {
             try
             {
@@ -44,13 +44,13 @@ namespace Sem5Pi2425.Controllers
 
         }
 
-        [HttpPut]
-        public async Task<ActionResult<OperationTypeDto>> EditOperationType(OperationTypeDto dto)
+        [HttpPut("edit")]
+        public async Task<ActionResult<OperationTypeDto>> EditOperationType(EditOperationTypeDto dto)
         {
-
+            string id = null;
             try
             {
-                var operationType = await _service.EditOperationType(dto);
+                var operationType = await _service.EditOperationType(id,dto);
                 return Ok(operationType);
             }
             catch (BusinessRuleValidationException e)

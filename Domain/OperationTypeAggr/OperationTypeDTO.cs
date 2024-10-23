@@ -23,5 +23,7 @@ namespace Sem5Pi2425.Domain.OperationTypeAggr {
             NeededSpecializations = neededSpecializations;
             Active = active;
         }
+
+
     }
 }

@@ -16,66 +16,31 @@ activate Admin
     Admin -> UI : asks to create a new operation type
     deactivate Admin
     activate UI
-            UI -> Controller: demands to create a new operation type
+            UI -> Admin: demands to create a new operation type
+    deactivate UI
+    activate Admin
+        Admin -> UI : inserts the information
+        deactivate Admin
+    activate UI
+    UI -> Controller: demands for operation type creation (POST)
     deactivate UI
     activate Controller
         Controller -> OperationTypeDTO: instantiates OperationTypeDTO
         Controller -> Service: CreateOperationType(OperationTypeDTO)
         deactivate Controller
         activate Service
-            Service -> Repo: searches staff
+            Service -> Repo: creates new operationType
             activate Repo
-            Repo --> Service: returns matching staff
+            Repo --> Service: returns matching operationType
             deactivate Repo
-        Service --> Controller: returns staff data
+        Service --> Controller: returns operationsType data
         deactivate Service
         activate Controller
         
-Controller --> UI: returns staff data
+Controller --> UI: returns operationType data
 activate UI
-UI->Admin : displays staff list/search results
+UI->Admin : shows success
 deactivate Controller
 
-activate Admin
-    Admin -> UI : selects a staff member and action (view/edit/deactivate)
-    deactivate Admin
-    activate UI
-UI -> Controller: requests staff details or an action (edit, deactivate)
-deactivate UI
-activate Controller
-
-alt Edit Staff
-    Controller -> EditDTO: instantiates StaffEditDTO
-    Controller -> Service: EditStaff(EditDTO)
-    deactivate Controller
-    activate Service
-        Service -> Repo: edits staff
-        activate Repo
-        Repo --> Service: returns edited staff
-        deactivate Repo
-        Service --> Controller: returns updated staff
-        deactivate Service
-    Controller --> UI: returns updated staff data
-    activate UI
-    UI->Admin : shows edit success
-    deactivate Controller
-end
-
-alt Deactivate Staff
-    Controller -> DeactivateDTO: instantiates StaffDeactivateDTO
-    Controller -> Service: DeactivateStaff(DeactivateDTO)
-    deactivate Controller
-    activate Service
-        Service -> Repo: deactivates staff and saves historical data
-        activate Repo
-        Repo --> Service: returns deactivated staff
-        deactivate Repo
-        Service --> Controller: returns deactivated staff
-        deactivate Service
-    Controller --> UI: returns deactivation success
-    activate UI
-    UI->Admin : shows deactivation success
-    deactivate Controller
-end
 
 @enduml

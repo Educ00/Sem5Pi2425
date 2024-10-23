@@ -1,3 +1,5 @@
+using System;
+
 namespace Sem5Pi2425.Domain.OperationTypeAggr {
 
     public class CreateOperationTypeDto {
@@ -11,7 +13,7 @@ namespace Sem5Pi2425.Domain.OperationTypeAggr {
         
         public CreateOperationTypeDto(string id, string duration, string name, string description,
             string neededSpecializations, string active) {
-            Id = id;
+            Id = Guid.NewGuid().ToString() ;
             Duration = duration;
             Name = name;
             Description = description;

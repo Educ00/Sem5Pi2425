@@ -54,14 +54,15 @@ class SessionToken {
 }
 
 class OperationTypeController{
-    +
+    +CreateOperationType(OperationTypeDTO dto): OperationType
+    
 }
 
 class OperationTypeService {
-
+    +CreateOperationType(OperationTypeDTO dto): OperationType
 }
 class OperationTypeRepository {
-
+    +CreateOperationType(OperationTypeDTO dto): OperationType
 }
 
 

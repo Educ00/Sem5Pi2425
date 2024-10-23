@@ -32,4 +32,29 @@ public class OperationType : Entity<OperationTypeId> , IAggregateRoot{
     public void MarkAsActive() {
         Active = true;
     }
+    public void UpdateName(Name name)
+    {
+        Name= name ;
+    }
+
+    public void UpdateDuration(DateTime duration)
+    {
+        Duration = duration ;
+    }
+    
+    public void UpdateDescription(Description description)
+    {
+        Description = description ;
+    }
+
+
+    public void UpdateNeededSpecialization(List<string> specialization)
+    {
+        NeededSpecializations = specialization ;
+    }
+    
+    public void UpdateActive(Boolean active)
+    {
+        Active = active ;
+    }
 }

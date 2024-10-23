@@ -12,6 +12,11 @@ public class UniqueIdentifier : IValueObject {
         this.Value = rolePrefix + DateTime.Now.ToString("yyyyMM") + sequentialNumber.ToString("D5");
     }
 
+    public UniqueIdentifier(string dtoUniqueIdentifier)
+    {
+        this.Value = dtoUniqueIdentifier;
+    }
+
     public static UniqueIdentifier CreateFromString(string text) {
         var temp = new UniqueIdentifier {
             Value = text

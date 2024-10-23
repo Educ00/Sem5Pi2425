@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Sem5Pi2425.Domain.OperationRequestAggr;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.StaffAggr;
+using Sem5Pi2425.Domain.SystemUserAggr;
 
 namespace Sem5Pi2425.Domain.OperationTypeAggr;
 
@@ -21,8 +23,8 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
     
     public interface IOperationTypeService
     {
-        Task<ActionResult<OperationTypeDto>> CreateOperationType(OperationTypeDto dto);
-        Task<ActionResult<OperationTypeDto>> EditOperationType(OperationTypeDto dto);
+        Task<ActionResult<OperationTypeDto>> CreateOperationType(CreateOperationTypeDto dto);
+        Task<ActionResult<OperationTypeDto>> EditOperationType(string id,EditOperationTypeDto dto);
     }
     
     public async Task<List<OperationTypeDto>> GetAllOperationTypesAsync() {
@@ -38,38 +40,95 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
         return listDto;
     }
 
-    public async Task<ActionResult<OperationTypeDto>> CreateOperationType(OperationTypeDto dto)
+    public async Task<ActionResult<OperationTypeDto>> CreateOperationType(CreateOperationTypeDto dto)
     {
         
-        var operationType = new OperationType(
-            dto.Duration,
-            dto.Name,
-            dto.Description,
-            new List<Staff>(),
-            dto.Active
-        );
+        var name = new Name(dto.Name);
+        var description = new Description(dto.Description);
+        var neededSpecializations = new List<Staff>();
+        var active=true;
+        var operationType = new OperationType( Convert.ToDateTime(dto.Duration), name, description, neededSpecializations, active);
         
         await _operationTypeRepository.AddAsync(operationType);
         await _unitOfWork.CommitAsync();
         
         return new OperationTypeDto(operationType);
     }
-    
-    public async Task<ActionResult<OperationTypeDto>> EditOperationType(OperationTypeDto dto)
+
+
+
+    public async Task<ActionResult<OperationTypeDto>> EditOperationType(string id, EditOperationTypeDto dto)
     {
-        var operationType = await _operationTypeRepository.GetByIdAsync(dto.Id);
-        operationType.Duration = dto.Duration;
-        operationType.Name = dto.Name;
-        operationType.Description = dto.Description;
-        operationType.NeededSpecializations = dto.NeededSpecializations;
-        operationType.Active = dto.Active;
-        
-        await _operationTypeRepository.AddAsync(operationType);
-        await _unitOfWork.CommitAsync();
-        
-        return new OperationTypeDto(operationType);
+        try
+        {
+            var operationType = await _operationTypeRepository.GetByIdAsync(new OperationTypeId(id));
+            if (operationType == null)
+            {
+                throw new BusinessRuleValidationException($"OperationType with ID {id} not found");
+            }
+
+            DateTime? newDuration = null;
+            Name newName = null;
+            Description newDescription = null;
+            List<string> newNeededSpecialization = null;
+
+            if (!string.IsNullOrEmpty(dto.Name))
+            {
+                try
+                {
+                    newName = new Name(dto.Name.Trim());
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new BusinessRuleValidationException($"Invalid name: {ex.Message}");
+                }
+            }
+
+            if (!string.IsNullOrEmpty(dto.Description))
+            {
+                try
+                {
+                    newDescription = new Description(dto.Description.Trim());
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new BusinessRuleValidationException($"Invalid description: {ex.Message}");
+                }
+            }
+
+            if (newDuration != null) {
+                 operationType.UpdateDuration(newDuration.Value);
+            }
+            
+            if (newName != null)
+            {
+                operationType.UpdateName(newName);
+            }
+
+            if (newDescription != null)
+            {
+                operationType.UpdateDescription(newDescription);
+            }
+
+            if (newNeededSpecialization != null)
+            {
+                operationType.UpdateNeededSpecialization(newNeededSpecialization);
+            }
+
+            await _unitOfWork.CommitAsync();
+            return new OperationTypeDto(operationType.Id, operationType.Duration, operationType.Name,
+                operationType.Description, operationType.NeededSpecializations, operationType.Active);
+        }
+        catch (BusinessRuleValidationException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new BusinessRuleValidationException($"Error updating type of operation: {ex.Message}");
+        }
     }
-    
+
     public async Task<ActionResult<OperationTypeDto>> InactivateOperationType(string operationTypeId)
     {
         var operationType = await _operationTypeRepository.GetByIdAsync(new OperationTypeId(operationTypeId));

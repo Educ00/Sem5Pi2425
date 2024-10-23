@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.Shared;
@@ -19,67 +20,125 @@ namespace Sem5Pi2425.Domain.StaffAggr
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ActionResult<StaffDTO>> CreateStaff(StaffDTO dto)
+        public async Task<ActionResult<StaffDTO>> CreateStaff(StaffCreateDTO dto)
         {
             
-            var temp = _userRepository.GetByEmailAsync(dto.User.Email);
+            User temp = await _userRepository.GetByEmailAsync(dto.Email);
             // Create Staff object
-            var staff = new Staff(
-                dto.User,
-                dto.AvailableSlotsList,
-                dto.UniqueIdentifier,
-                dto.Specialization
-            );
+            var uniqueIdentifier = new UniqueIdentifier(dto.uniqueIdentifier);
+            List<AvailableSlots> availableSlotsList = [new AvailableSlots(dto.availableSlotsList)];
+            var specialization = Enum.Parse<Specialization>(dto.specialization);
+            var staff = new Staff(temp, availableSlotsList, uniqueIdentifier, specialization); 
+
 
             // Add staff to the repository
             await _staffRepository.AddAsync(staff);
             await _unitOfWork.CommitAsync();
 
             // Return DTO for the created staff
-            return new StaffDTO(staff);
+            return new StaffDTO(new UserDto(staff.User), staff.UniqueIdentifier, staff.AvailableSlots, staff.Specialization);
         }
 
-        public async Task<ActionResult<StaffDTO>> EditStaff(StaffDTO dto, UserDto user, Specialization specialization)
+        public async Task<ActionResult<StaffDTO>> EditStaff(string id, StaffEditDto dto)
         {
-            // Convert the string Id from dto to UserId
-            var userId = new UserId(dto.Id);
-
-            // Retrieve the current user
-            var userconverted = new User(
-                userId,
-                new Username(user.Username),
-                new Email(user.Email),
-                new FullName(user.FullName),
-                new PhoneNumber(user.PhoneNumber),
-                Enum.Parse<Role>(user.Role)
-            );
-
-            // Create Staff object
-            var staff = new Staff(
-                userconverted,
-                dto.AvailableSlotsList,
-                dto.UniqueIdentifier,
-                dto.Specialization
-            );
-
-            // Edit staff in the repository
-            _staffRepository.Edit(staff, specialization);
-            await _unitOfWork.CommitAsync();
-
-            // Return DTO for the edited staff
-            return new StaffDTO(staff);
+       var staff = await _staffRepository.GetByIdAsync(new UserId(id));
+        if (staff == null)
+        {
+            throw new BusinessRuleValidationException($"Staff with ID {id} not found");
         }
 
-        public async Task<StaffDTO> GetStaffByUserAsync(UserDto userDto) {
-            var staff = await _staffRepository.GetByIdAsync(userDto.Id);
-
-            return new StaffDTO(staff);
+        if (staff.User == null)
+        {
+            throw new BusinessRuleValidationException($"User data for staff with ID {id} is missing");
         }
+
+        Email newEmail = null;
+        FullName newFullName = null;
+        PhoneNumber newPhoneNumber = null;
+        Nullable< Specialization> newSpecialization=null;
+
+        if (!string.IsNullOrEmpty(dto.Email))
+        {
+            try 
+            {
+                newEmail = new Email(dto.Email.Trim());
+            }
+            catch (ArgumentException)
+            {
+                throw new BusinessRuleValidationException($"Invalid email format: {dto.Email}");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(dto.FullName))
+        {
+            try 
+            {
+                newFullName = new FullName(dto.FullName.Trim());
+            }
+            catch (ArgumentException ex)
+            {
+                throw new BusinessRuleValidationException($"Invalid full name: {ex.Message}");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(dto.PhoneNumber))
+        {
+            try 
+            {
+                newPhoneNumber = new PhoneNumber(dto.PhoneNumber.Trim());
+            }
+            catch (ArgumentException ex)
+            {
+                throw new BusinessRuleValidationException($"Invalid phone number: {ex.Message}");
+            }
+        }
+
+        if (!string.IsNullOrEmpty(dto.specialization))
+        {
+            try 
+            {
+                newSpecialization = Enum.Parse<Specialization>(dto.specialization);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new BusinessRuleValidationException($"Invalid specialization: {ex.Message}");
+            }
+        }
+
+        if (newEmail != null)
+        {
+            staff.User.UpdateEmail(newEmail);
+        }
+
+        if (newFullName != null)
+        {
+            staff.User.UpdateFullName(newFullName);
+        }
+
+        if (newPhoneNumber != null)
+        {
+            staff.User.UpdatePhoneNumber(newPhoneNumber);
+        }
+
+        if (newSpecialization != null)
+        {
+            staff.UpdateSpecialization((Specialization)newSpecialization);
+        }
+        
+
+
+
+        await _unitOfWork.CommitAsync();
+
+        return new StaffDTO(new UserDto(staff.User),  staff.UniqueIdentifier,staff.AvailableSlots, staff.Specialization);
+        }
+
+
 
         public interface IStaffService
         {
-            Task<ActionResult<StaffDTO>> CreateStaff(StaffDTO dto);
-            Task<ActionResult<StaffDTO>> EditStaff(StaffDTO dto, UserDto user, Specialization specialization);
+            Task<ActionResult<StaffDTO>> CreateStaff(StaffCreateDTO dto);
+            Task<ActionResult<StaffDTO>> EditStaff(string id,StaffEditDto dto);
         }
     }
 }
