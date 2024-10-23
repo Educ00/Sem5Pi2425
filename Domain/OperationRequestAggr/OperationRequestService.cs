@@ -88,8 +88,6 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
                            $"Doctor: {operationRequest.Doctor.Username.Value}; Patient: {operationRequest.Patient.User.Username.Value}; Operation type: {operationRequest.OperationType.Name.Value}";
                     _logService.AddLogAsync(new LogDto(null, Type.OperationRequest.ToString(), log, patient.Id.Value, null));
 
-                    operationRequest.Patient.MedicalRecords.Write($"OPERATION REQUEST \nId: {operationRequest.Id.Value} \nDeadline: {operationRequest.Deadline.ToString()} \nOperationType: {operationRequest.OperationType.Name.Value}");
-                    await _unitOfWork.CommitAsync();
                     return new OperationRequestDTO(operationRequest.Id, operationRequest.Deadline, operationRequest.Priority,
                         operationRequest.Doctor, operationRequest.Patient, operationRequest.OperationType);
             } 

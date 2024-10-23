@@ -83,7 +83,7 @@ namespace Sem5Pi2425.Controllers
         }
         
         // POST: api/OperationRequest/update/id
-       // [Authorize(Roles = "admin,doctor")]
+        [Authorize(Roles = "admin,doctor")]
         [HttpPatch("update/{id}")]
         public async Task<ActionResult<OperationRequestDTO>> UpdateOperationRequest(string id, [FromBody] CreateOperationRequestDto dto) {
             try {
