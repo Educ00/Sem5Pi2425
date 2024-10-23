@@ -1,0 +1,34 @@
+@startuml
+    skinparam sequenceMessageAlign center
+    title 5.1.4. As a Patient, I want to update my user profile, so that I \ncan change my personal details and preferences.
+    actor Patient
+    participant System
+
+    Note over Patient,System: Patient must be authenticated
+
+    Patient->>System: PATCH /api/Users/Patient/edit-profile
+    
+    activate System
+    Note right of System: Validates JWT token\nand patient role
+
+    alt Invalid Authentication
+        System-->>Patient: 401 Unauthorized
+    else Valid Authentication
+        Note right of System: Validates input data
+        
+        alt Invalid Input Data
+            System-->>Patient: 400 Bad Request\n(with error message)
+        else Valid Input Data
+            Note right of System: Updates profile in database
+            
+            alt Email Changed
+                System->>Patient: Send confirmation email
+            end
+            
+            Note right of System: Creates audit log
+            
+            System-->>Patient: 200 OK\n(updated profile data)
+        end
+    end
+    deactivate System
+@enduml
