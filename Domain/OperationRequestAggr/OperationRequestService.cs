@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.AppointmentAggr;
@@ -152,5 +153,24 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
             }
             throw new Exception("Doctors can only update operations requests they created");
         }
+        
+        public async Task<List<OperationRequestDTO>> SearchOperationRequests(string patientUsername, string operationType, int? priority) {
+            var operationRequests = await _repo.GetAllAsync();
+
+            if (!string.IsNullOrEmpty(patientUsername)) {
+                operationRequests = operationRequests.Where(or => or.Patient.User.Username.Value.Contains(patientUsername)).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(operationType)) {
+                operationRequests = operationRequests.Where(or => or.OperationType.Name.Value.Contains(operationType)).ToList();
+            }
+
+            if (priority.HasValue) {
+                operationRequests = operationRequests.Where(or => or.Priority == (Priority)priority).ToList();
+            }
+
+            return operationRequests.Select(or => new OperationRequestDTO(or)).ToList();
+        }
+
     }
 }

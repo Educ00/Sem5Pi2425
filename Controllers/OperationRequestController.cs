@@ -100,5 +100,14 @@ namespace Sem5Pi2425.Controllers
                 return BadRequest(new { Message = e.Message });
             }
         }
+
+        // GET: api/OperationRequest/search
+        [Authorize(Roles = "admin,doctor")]
+        [HttpGet("search")]
+        public async Task<ActionResult<List<OperationRequestDTO>>> SearchOperationRequests([FromQuery] string patientName, [FromQuery] string operationType, [FromQuery] int? priority) {
+            var results = await _service.SearchOperationRequests(patientName, operationType, priority);
+            return Ok(results);
+        }
+
     }
 }
