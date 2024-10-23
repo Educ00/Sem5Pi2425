@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUserAggr;
@@ -12,6 +13,7 @@ namespace Sem5Pi2425.Domain.StaffAggr
         private readonly IStaffRepository _staffRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
+        
 
         public StaffService(IStaffRepository staffRepository, IUserRepository userRepository, IUnitOfWork unitOfWork)
         {
@@ -22,36 +24,44 @@ namespace Sem5Pi2425.Domain.StaffAggr
 
         public async Task<ActionResult<StaffDTO>> CreateStaff(StaffCreateDTO dto)
         {
-            
-            User temp = await _userRepository.GetByEmailAsync(dto.Email);
-            // Create Staff object
+            // First check if user exists
+            User user = await _userRepository.GetByEmailAsync(dto.Email);
+    
+            // If user doesn't exist, create one
+            if (user == null)
+            {
+                user = new User(UserId.NewUserId(),
+                    new Username(dto.Username),
+                    new Email(dto.Email),
+                    new FullName(dto.FullName),
+                    new PhoneNumber(dto.PhoneNumber),
+                    Role.doctor  // Or get this from the DTO/determine based on business rules
+                );
+                await _userRepository.AddAsync(user);
+                await _unitOfWork.CommitAsync();
+            }
+    
+            // Now create the staff member
             var uniqueIdentifier = new UniqueIdentifier(dto.uniqueIdentifier);
             List<AvailableSlots> availableSlotsList = [new AvailableSlots(dto.availableSlotsList)];
             var specialization = Enum.Parse<Specialization>(dto.specialization);
-            var staff = new Staff(temp, availableSlotsList, uniqueIdentifier, specialization); 
-
-
-            // Add staff to the repository
+    
+            var staff = new Staff(user, availableSlotsList, uniqueIdentifier, specialization);
+    
             await _staffRepository.AddAsync(staff);
             await _unitOfWork.CommitAsync();
-
-            // Return DTO for the created staff
+    
             return new StaffDTO(new UserDto(staff.User), staff.UniqueIdentifier, staff.AvailableSlots, staff.Specialization);
         }
 
-        public async Task<ActionResult<StaffDTO>> EditStaff(string id, StaffEditDto dto)
+        public async Task<ActionResult<StaffDTO>> EditStaff(UserDto user, StaffEditDto dto)
         {
-       var staff = await _staffRepository.GetByIdAsync(new UserId(id));
+       var staff = await _staffRepository.GetByIdAsync(new UserId(user.Id.ToString()));
         if (staff == null)
         {
-            throw new BusinessRuleValidationException($"Staff with ID {id} not found");
+            throw new BusinessRuleValidationException($"Staff with ID {user.Id} not found");
         }
-
-        if (staff.User == null)
-        {
-            throw new BusinessRuleValidationException($"User data for staff with ID {id} is missing");
-        }
-
+        
         Email newEmail = null;
         FullName newFullName = null;
         PhoneNumber newPhoneNumber = null;
@@ -133,12 +143,18 @@ namespace Sem5Pi2425.Domain.StaffAggr
         return new StaffDTO(new UserDto(staff.User),  staff.UniqueIdentifier,staff.AvailableSlots, staff.Specialization);
         }
 
+        public Task<ActionResult<StaffDTO>> InactivateStaff(UserDto id)
+        {
+            throw new NotImplementedException();
+        }
 
 
         public interface IStaffService
         {
             Task<ActionResult<StaffDTO>> CreateStaff(StaffCreateDTO dto);
-            Task<ActionResult<StaffDTO>> EditStaff(string id,StaffEditDto dto);
+            Task<ActionResult<StaffDTO>> EditStaff(UserDto id,StaffEditDto dto);
+            
+            Task<ActionResult<StaffDTO>> InactivateStaff(UserDto id);
         }
     }
 }

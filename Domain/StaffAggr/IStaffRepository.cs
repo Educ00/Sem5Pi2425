@@ -11,5 +11,7 @@ public interface IStaffRepository : IRepository<Staff, UserId> {
         staffToEdit.Specialization = specialization;
         AddAsync(staffToEdit);
     }
+    
+    
    
 }

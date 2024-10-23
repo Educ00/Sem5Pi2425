@@ -35,4 +35,9 @@ public class StaffRepository : BaseRepository<Staff, UserId>, IStaffRepository {
             .Include(p => p.User)
             .FirstOrDefaultAsync(x => x.User.Username.Value.Equals(username));
     }
+    public IQueryable<Staff> Query()
+    {
+        return Objs.AsQueryable(); // Assuming _context is your DbContext and Staff is the DbSet for staff members.
+    }
+
 }

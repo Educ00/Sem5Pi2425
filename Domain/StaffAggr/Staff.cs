@@ -19,10 +19,10 @@ public class Staff : Entity<UserId> {
         }
 
         this.Id = user.Id;
-        this.UniqueIdentifier = uniqueIdentifier;
-        this.User = user;
-        this.AvailableSlots = availableSlots;
-        this.Specialization = specialization;
+        User = user ?? throw new ArgumentNullException(nameof(user));
+        AvailableSlots = availableSlots ?? throw new ArgumentNullException(nameof(availableSlots));
+        UniqueIdentifier = uniqueIdentifier;
+        Specialization = specialization;
     }
 
     public void UpdateUniqueIdentifier(UniqueIdentifier uniqueIdentifier) {

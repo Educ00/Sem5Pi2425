@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Sem5Pi2425.Domain.StaffAggr;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Sem5Pi2425.Domain.Shared;
 using Sem5Pi2425.Domain.SystemUserAggr;
 
@@ -16,69 +17,65 @@ namespace Sem5Pi2425.Web.Controllers
     {
         private readonly StaffService.IStaffService _service;
         private readonly UserService _userService;
-
-        public StaffController(StaffService.IStaffService staffService,UserService userService)
+        private readonly ILogger<StaffController> _logger;
+        public StaffController(StaffService.IStaffService staffService,UserService userService,ILogger<StaffController> logger)
         {
             this._service = staffService;
             this._userService = userService;
+            _logger = logger;
         }
-       // [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin")]
         [HttpPost("CreateStaff")]
         public async Task<ActionResult<StaffDTO>> CreateStaff([FromBody] StaffCreateDTO dto) {
-            try {
+            try 
+            {
+                _logger.LogInformation($"Attempting to create staff with Email: {dto.Email}");
+            
+                if (!ModelState.IsValid)
+                {
+                    var errors = string.Join("; ", ModelState.Values
+                        .SelectMany(x => x.Errors)
+                        .Select(x => x.ErrorMessage));
+                    _logger.LogWarning($"Model validation failed: {errors}");
+                    return BadRequest(new { Message = errors });
+                }
 
-                var staff = await _service.CreateStaff(dto);
-                return Ok(staff);
+                var result = await _service.CreateStaff(dto);
+                return Ok(result);
             }
-            catch (BusinessRuleValidationException e) {
-                return BadRequest(new { Message = e.Message });
+            catch (BusinessRuleValidationException ex)
+            {
+                _logger.LogWarning($"Business rule validation failed: {ex.Message}");
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error creating staff: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                return BadRequest(new { Message = "An unexpected error occurred while creating the staff member." });
             }
         }
-      //  [Authorize(Roles = "admin")]
-        [HttpPut("EditStaff")]
+        [Authorize(Roles = "admin")]
+        [HttpPut("EditStaff/{id}")]
         public async Task<ActionResult<StaffDTO>> EditStaff(string id,[FromBody] StaffEditDto dto ) {
             try {
                 
                 // Retrieve all users
-                var users = await _userService.GetAllUsersAsync();
-
-                // Print the list of users
-                Console.WriteLine("Available Users:");
-                foreach (var user in users)
-                {
-                    Console.WriteLine($"ID: {user.Id}, Username: {user.Username}, Email: {user.Email}");
-                }
-
-                // Let the admin choose a user by ID
-                Console.WriteLine("Enter the ID of the user to create staff:");
-                var chosenUserId = Console.ReadLine();
-
-                // Find the chosen user
-                UserDto chosenUser = users.FirstOrDefault(u => u.Id.ToString() == chosenUserId);
-                if (chosenUser == null)
-                {
-                    return BadRequest(new { Message = "Invalid user ID" });
-                }
+                var users = await _userService.GetUserByEmailAsync(id);
                 
-                Console.WriteLine("Enter the number of the new specialization:");
-                var chosenSpecializationNumber = Console.ReadLine();
+                // Find the chosen use
+                
 
-                // Parse the chosen specialization
-                if (!Enum.TryParse<Specialization>(chosenSpecializationNumber, out var chosenSpecialization))
-                {
-                    return BadRequest(new { Message = "Invalid specialization number" });
-                }
                 
                 
-                var staff = await _service.EditStaff(id,dto);
+                var staff = await _service.EditStaff(users,dto);
                 return Ok(staff);
             }
             catch (BusinessRuleValidationException e) {
                 return BadRequest(new { Message = e.Message });
             }
         }
-     //   [Authorize(Roles = "admin")]
-
+        [Authorize(Roles = "admin")]
         [HttpPut("Inactivate")]
         public async Task<ActionResult<StaffDTO>> Inactivate(string id) {
             try {
@@ -94,7 +91,11 @@ namespace Sem5Pi2425.Web.Controllers
                 return BadRequest(new { Message = e.Message });
             }
         }
+        
+        
     }
+    
+    
     
     
 }
