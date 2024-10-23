@@ -1,0 +1,39 @@
+﻿@startuml
+    skinparam sequenceMessageAlign center
+    title US 5.1.1. As an Admin, I want to register new backoffice users \n(e.g., doctors, nurses, technicians, admins) via an out-of-band process, \nso that they can access the backoffice system with appropriate permissions.
+    actor Admin as A
+    actor "Backoffice User" as BU
+    participant System as S
+
+    Note over A,S: Admin must be authenticated
+
+    A->>S: POST /api/Users/backoffice/create (createBackofficeUserDto)
+    Note right of S: {username, email, fullName,phoneNumber, role}
+    
+    alt Invalid Input
+        S-->>A: 400 Bad Request (Validation Error)
+    else Email Already Exists
+        S-->>A: 400 Bad Request (Email Exists)
+    else Invalid Role
+        S-->>A: 400 Bad Request (Invalid Role)
+    else Success
+        S-->>A: 200 OK (UserDTO)
+        S->>BU: Send Activation Email
+    end
+
+    Note over BU,S: User receives email and clicks activation link
+
+    BU->>S: POST /api/Users/activate (userPasswordDto)
+    Note right of S: {token, password,confirmPassword}
+
+    alt Invalid/Expired Token
+        S-->>BU: 400 Bad Request (Token Error)
+    else Passwords Don't Match
+        S-->>BU: 400 Bad Request (Password Error)
+    else Weak Password
+        S-->>BU: 400 Bad Request (Password Requirements)
+    else Success
+        S-->>BU: 200 OK (UserDTO)
+        S->>BU: Send Confirmation Email
+    end
+@enduml
