@@ -4,7 +4,6 @@ using Sem5Pi2425.Infrastructure.Shared;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Sem5Pi2425.Domain.SystemUserAggr;
 
 namespace Sem5Pi2425.Infrastructure.OperationRequestInfra;
 
@@ -17,6 +16,7 @@ public class OperationRequestRepository : BaseRepository<OperationRequest, Opera
             .Include(p => p.Doctor)
             .Include(p => p.Patient)
             .Include(p => p.OperationType)            
+            .Include(p => p.Patient.User)
             .ToListAsync();
     }
 
@@ -25,6 +25,7 @@ public class OperationRequestRepository : BaseRepository<OperationRequest, Opera
             .Include(p => p.Doctor)
             .Include(p => p.Patient)
             .Include(p => p.OperationType)
+            .Include(p => p.Patient.User)
             .FirstOrDefaultAsync(x => id.Equals(x.Id));
     }
 
@@ -33,6 +34,7 @@ public class OperationRequestRepository : BaseRepository<OperationRequest, Opera
             .Include(p => p.Doctor)
             .Include(p => p.Patient)
             .Include(p => p.OperationType)            
+            .Include(p => p.Patient.User)
             .Where(x => ids.Contains(x.Id))
             .ToListAsync();
     }

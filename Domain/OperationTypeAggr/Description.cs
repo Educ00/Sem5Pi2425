@@ -11,5 +11,6 @@ public class Description : IValueObject{
         if (string.IsNullOrWhiteSpace(value)) {
             throw new BusinessRuleValidationException("Invalid description ->" + value);
         }
+        Value = value;
     }
 }
