@@ -16,5 +16,10 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
         public static UserId NewUserId() {
             return new UserId(Guid.NewGuid().ToString());
         }
+        
+        public override string ToString()
+        {
+            return Value;
+        }
     }
 }

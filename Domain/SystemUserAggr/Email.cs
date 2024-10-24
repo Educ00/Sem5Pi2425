@@ -36,5 +36,15 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
         public static implicit operator string(Email email) => email.Value;
         public static explicit operator Email(string email) => new Email(email);
+
+        public bool Contains(string filter, StringComparison comparisonType)
+        {
+            if (string.IsNullOrEmpty(filter))
+            {
+                return false;
+            }
+
+            return Value.IndexOf(filter, comparisonType) >= 0;
+        }
     }
 }

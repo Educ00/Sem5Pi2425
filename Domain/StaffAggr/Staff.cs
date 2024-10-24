@@ -36,7 +36,7 @@ public class Staff : Entity<UserId> {
     public void UpdateSpecialization(Specialization specialization) {
         Specialization = specialization;
     }
-    
 
-    
+
+ 
 }

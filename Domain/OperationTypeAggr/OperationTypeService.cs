@@ -24,7 +24,7 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
     public interface IOperationTypeService
     {
         Task<ActionResult<OperationTypeDto>> CreateOperationType(CreateOperationTypeDto dto);
-        Task<ActionResult<OperationTypeDto>> EditOperationType(string id,EditOperationTypeDto dto);
+        Task<ActionResult<OperationTypeDto>> EditOperationType(EditOperationTypeDto operationTypeDto,EditOperationTypeDto dto);
     }
     
     public async Task<List<OperationTypeDto>> GetAllOperationTypesAsync() {
@@ -42,12 +42,17 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
 
     public async Task<ActionResult<OperationTypeDto>> CreateOperationType(CreateOperationTypeDto dto)
     {
-        
+        List<OperationType> operationTypes = await _operationTypeRepository.GetAllAsync();
+        if (operationTypes.Any(ot => ot.Name.Value == dto.Name))
+        {
+            throw new BusinessRuleValidationException("Operation type with this name already exists");
+        }
+        var duration = Convert.ToDateTime(dto.Duration);
         var name = new Name(dto.Name);
         var description = new Description(dto.Description);
         var neededSpecializations = new List<Staff>();
         var active=true;
-        var operationType = new OperationType( Convert.ToDateTime(dto.Duration), name, description, neededSpecializations, active);
+        var operationType = new OperationType( duration, name, description, neededSpecializations, active);
         
         await _operationTypeRepository.AddAsync(operationType);
         await _unitOfWork.CommitAsync();
@@ -57,14 +62,14 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
 
 
 
-    public async Task<ActionResult<OperationTypeDto>> EditOperationType(string id, EditOperationTypeDto dto)
+    public async Task<ActionResult<OperationTypeDto>> EditOperationType(EditOperationTypeDto operationTypeDto, EditOperationTypeDto dto)
     {
         try
         {
-            var operationType = await _operationTypeRepository.GetByIdAsync(new OperationTypeId(id));
+            var operationType = await _operationTypeRepository.GetByIdAsync(new OperationTypeId(operationTypeDto.Id));
             if (operationType == null)
             {
-                throw new BusinessRuleValidationException($"OperationType with ID {id} not found");
+                throw new BusinessRuleValidationException($"OperationType with ID {operationType.Id} not found");
             }
 
             DateTime? newDuration = null;
@@ -160,5 +165,16 @@ public class OperationTypeService : OperationTypeService.IOperationTypeService
         }
 
         return operationTypes.Select(ot => new OperationTypeDto(ot)).ToList();
+    }
+    
+    public async Task<EditOperationTypeDto> GetOperationTypeByIdAsync(string id)
+    {
+        var operationType = await _operationTypeRepository.GetByIdAsync(id);
+        if (operationType == null)
+        {
+            throw new BusinessRuleValidationException($"Operation type with ID {id} not found");
+        }
+
+        return new EditOperationTypeDto(operationType.Id.Value, operationType.Duration.ToLongDateString(), operationType.Name.Value,operationType.Description.Value, operationType.NeededSpecializations.ToString(), operationType.Active.ToString());
     }
 }

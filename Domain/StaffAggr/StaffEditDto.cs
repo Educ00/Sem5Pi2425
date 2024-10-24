@@ -11,10 +11,10 @@ public class StaffEditDto
     public string? PhoneNumber { get; set; }
     public string? uniqueIdentifier { get; set; }
 
-    public List<string>? availableSlotsList { get; set; }
+    public string? availableSlotsList { get; set; }
     public string? specialization { get; set; }
     
-    public StaffEditDto(string username,string email, string fullName, string phoneNumber, string uniqueIdentifier, List<string> availableSlotsList, string specialization)
+    public StaffEditDto(string username,string email, string fullName, string phoneNumber, string uniqueIdentifier, string availableSlotsList, string specialization)
     {
         this.Username = username;
         this.Email = email;

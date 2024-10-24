@@ -57,4 +57,7 @@ public class OperationType : Entity<OperationTypeId> , IAggregateRoot{
     {
         Active = active ;
     }
+    
+    
+    
 }
