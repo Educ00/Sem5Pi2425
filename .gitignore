@@ -491,4 +491,4 @@ $RECYCLE.BIN/
 # Mac OS
 .DS_Store
 
-./secrets.json
+secrets.json
