@@ -5,10 +5,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Extensions;
 using Sem5Pi2425.Domain.LogAggr;
 using Sem5Pi2425.Domain.PatientAggr;
 using Sem5Pi2425.Domain.Shared;
@@ -127,45 +126,38 @@ namespace Sem5Pi2425.Controllers {
                 return BadRequest(new { Message = e.Message });
             }
         }
-        
+
         // DELETE: api/Users/admin/delete-patient
         [Authorize(Roles = "admin")]
         [HttpDelete("admin/delete-patient")]
-        public async Task<ActionResult> DeletePatient([FromBody] AdminPatientDeletionDto dto)
-        {
-            try
-            {
+        public async Task<ActionResult> DeletePatient([FromBody] AdminPatientDeletionDto dto) {
+            try {
                 var result = await _patientService.RequestAccountDeletionWithoutEmail(dto.Email);
-                if (!result)
-                {
+                if (!result) {
                     return BadRequest(new { Message = "Failed to initiate patient deletion process" });
                 }
 
                 var user = await _userUserService.GetUserByEmailAsync(dto.Email);
-                if (user == null)
-                {
+                if (user == null) {
                     return NotFound(new { Message = "Patient not found" });
                 }
 
                 await _patientService.ConfirmAccountDeletionByAdmin(user.Id.Value);
 
-                return Ok(new
-                {
+                return Ok(new {
                     Message = "Patient deletion completed successfully",
-                    Details = new
-                    {
+                    Details = new {
                         PatientEmail = dto.Email,
                         DeletedAt = DateTime.UtcNow,
                         DeletedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                     }
                 });
             }
-            catch(BusinessRuleValidationException e)
-            {
+            catch (BusinessRuleValidationException e) {
                 return BadRequest(new { Message = e.Message });
             }
         }
-        
+
         // GET: api/Users/admin/get-patients
         [Authorize(Roles = "admin")]
         [HttpGet("admin/get-patients")]
@@ -173,10 +165,8 @@ namespace Sem5Pi2425.Controllers {
             [FromQuery] string searchTerm,
             [FromQuery] string searchBy,
             [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10)
-        {
-            try
-            {
+            [FromQuery] int pageSize = 10) {
+            try {
                 if (pageNumber < 1) pageNumber = 1;
                 if (pageSize < 1) pageSize = 10;
                 if (pageSize > 50) pageSize = 50;
@@ -190,11 +180,9 @@ namespace Sem5Pi2425.Controllers {
 
                 var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-                return Ok(new
-                {
-                    Data = patients ?? new List<UserDto>(), 
-                    Pagination = new
-                    {
+                return Ok(new {
+                    Data = patients ?? new List<UserDto>(),
+                    Pagination = new {
                         CurrentPage = pageNumber,
                         PageSize = pageSize,
                         TotalCount = totalCount,
@@ -202,25 +190,22 @@ namespace Sem5Pi2425.Controllers {
                         HasPrevious = pageNumber > 1,
                         HasNext = pageNumber < totalPages
                     },
-                    SearchInfo = new
-                    {
+                    SearchInfo = new {
                         SearchTerm = searchTerm,
                         SearchBy = searchBy
                     },
                     Message = patients.Count == 0 ? "No matching records found" : null
                 });
             }
-            catch (BusinessRuleValidationException e)
-            {
+            catch (BusinessRuleValidationException e) {
                 return BadRequest(new { Message = e.Message });
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 Console.WriteLine($"Error in GetPatientProfiles: {ex}"); // Debug log
                 return StatusCode(500, new { Message = "An error occurred while retrieving patient profiles" });
             }
         }
-        
+
         // POST: api/Users/Patient/confirm-deletion
         [Authorize(Roles = "admin")]
         [HttpPost("Users/Admin/confirm-deletion")]
@@ -237,7 +222,7 @@ namespace Sem5Pi2425.Controllers {
                 return BadRequest(new { Message = e.Message });
             }
         }
-        
+
         // Inactivate: api/Users/inactivate/id
         [Authorize(Roles = "admin")]
         [HttpPatch("inactivate/{id}")]
@@ -276,7 +261,7 @@ namespace Sem5Pi2425.Controllers {
         public async Task<ActionResult> RequestPasswordReset() {
             try {
                 var loggedUser = HttpContext.User;
-                
+
                 if (!loggedUser.Identity.IsAuthenticated) {
                     return Unauthorized();
                 }
@@ -295,11 +280,11 @@ namespace Sem5Pi2425.Controllers {
         public async Task<ActionResult<UserDto>> ResetPassword([FromBody] UserPasswordDto userPasswordDto) {
             try {
                 var loggedUser = HttpContext.User;
-                
+
                 if (!loggedUser.Identity.IsAuthenticated) {
                     return Unauthorized();
                 }
-                
+
                 var user = await _userUserService.CompletePasswordReset(userPasswordDto);
                 return Ok(user);
             }
@@ -419,6 +404,109 @@ namespace Sem5Pi2425.Controllers {
         public async Task<ActionResult<IEnumerable<LogDto>>> GetLogsAsync() {
             var logs = await this._logService.GetAllAsync();
             return Ok(logs);
+        }
+
+        // Add these methods to your UsersController
+        [HttpGet("signin-google")]
+        [AllowAnonymous]
+        public IActionResult SignInGoogle() {
+            var properties = new AuthenticationProperties {
+                RedirectUri = Url.Action(nameof(GoogleCallback))
+            };
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("signin-google-callback")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GoogleCallback() {
+            var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
+            if (!result.Succeeded)
+                return BadRequest(new { Message = "Google authentication failed" });
+
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrEmpty(email)) {
+                return BadRequest("Invalid email ->" + email);
+            }
+
+            var name = result.Principal.FindFirstValue(ClaimTypes.Name);
+            if (string.IsNullOrEmpty(name)) {
+                return BadRequest("Invalid name ->" + name);
+            }
+
+            // Check if user exists
+            try {
+                UserDto existingUser = null;
+                if (await _userUserService.UserExistsByEmailAsync(email)) {
+                    existingUser = await _userUserService.GetUserByEmailAsync(email);
+                }
+                if (existingUser != null) {
+                    // User exists, proceed with login
+                    var claims = new List<Claim> {
+                        new(ClaimTypes.Name, existingUser.Username),
+                        new(ClaimTypes.Email, existingUser.Email),
+                        new(ClaimTypes.NameIdentifier, existingUser.Id.Value),
+                        new(ClaimTypes.Role, existingUser.Role.ToString())
+                    };
+
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                    await HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(claimsIdentity),
+                        new AuthenticationProperties {
+                            IsPersistent = true,
+                            ExpiresUtc = DateTime.UtcNow.AddHours(1)
+                        });
+
+                    return Ok(new { Message = "Logged in successfully via Google", UserId = existingUser.Id.Value });
+                }
+
+                // Create new patient
+                var registerDto = new RegisterPatientDto(
+                    username: email.Split('@')[0],
+                    email: email,
+                    fullName: "full name",
+                    phoneNumber: "966666666", // This could be collected later
+                    birthDate: DateTime.UtcNow.ToString("yyyy-MM-dd"), // Default value, could be updated later
+                    gender: "male", // Default value, could be updated later
+                    emergencyContactFullName: "full name", // Default to user's name, should be updated later
+                    emergencyContactEmail: email, // Default to user's email, should be updated later
+                    emergencyContactPhoneNumber: "966666666", // Should be updated later
+                    medicalConditions: "None" // Default value, should be updated later
+                );
+
+                var patientDto = await _patientService.SignIn(registerDto);
+
+                var newClaims = new List<Claim> {
+                    new(ClaimTypes.Name, patientDto.User.Username),
+                    new(ClaimTypes.Email, patientDto.User.Email),
+                    new(ClaimTypes.NameIdentifier, patientDto.User.Id.Value),
+                    new(ClaimTypes.Role, patientDto.User.Role.ToString())
+                };
+
+                var newClaimsIdentity =
+                    new ClaimsIdentity(newClaims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(newClaimsIdentity),
+                    new AuthenticationProperties {
+                        IsPersistent = true,
+                        ExpiresUtc = DateTime.UtcNow.AddHours(1)
+                    });
+
+                return Ok(new {
+                    Message = "Account created and logged in successfully via Google",
+                    UserId = patientDto.User.Id.Value,
+                    Note = "Please update your profile with complete information"
+                });
+            }
+            catch (BusinessRuleValidationException ex) {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (Exception ex) {
+                return StatusCode(500, new { Message = "An error occurred during authentication: " + ex });
+            }
         }
 
         // FALTAM OUTROS METODOS

@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +33,11 @@ using Sem5Pi2425.Infrastructure.SurgeryRoomInfra;
 namespace Sem5Pi2425 {
     public class Startup {
         public Startup(IConfiguration configuration) {
-            Configuration = configuration;
+            //Configuration = configuration;
+            var builder = new ConfigurationBuilder()
+                .AddConfiguration(configuration)
+                .AddJsonFile("secrets.json", optional: false, reloadOnChange: true);
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -41,16 +46,23 @@ namespace Sem5Pi2425 {
         public void ConfigureServices(IServiceCollection services) {
             services.AddDbContext<Sem5Pi2425DbContext>(opt =>
                 opt.UseInMemoryDatabase("Sem5Pi2425DB")
-                .ReplaceService<IValueConverterSelector, StronglyEntityIdValueConverterSelector>());
-            
+                    .ReplaceService<IValueConverterSelector, StronglyEntityIdValueConverterSelector>());
+
             ConfigureMyServices(services);
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            services.AddAuthentication(options => {
+                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+                })
                 .AddCookie(options => {
                     options.ExpireTimeSpan = TimeSpan.FromHours(1);
                     options.SlidingExpiration = true;
                     options.AccessDeniedPath = "/Forbiden/";
                     options.LoginPath = "/api/Users/login";
+                })
+                .AddGoogle(options => {
+                    options.ClientId = Configuration["GoogleKeys:ClientId"];
+                    options.ClientSecret = Configuration["GoogleKeys:ClientSecret"];
                 });
 
             services.AddControllers().AddNewtonsoftJson();
@@ -73,7 +85,7 @@ namespace Sem5Pi2425 {
             app.UseRouting();
 
             app.UseAuthentication();
-            
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
@@ -85,7 +97,7 @@ namespace Sem5Pi2425 {
             services.AddTransient<UserBootstrapService>();
 
             services.AddTransient<IEmailService, EmailService>();
-            
+
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<UserService>();
 
@@ -93,11 +105,11 @@ namespace Sem5Pi2425 {
 
             services.AddTransient<IOperationRequestRepository, OperationRequestRepository>();
             services.AddTransient<OperationRequestService>();
-            
+
             services.AddTransient<IStaffRepository, StaffRepository>();
             services.AddTransient<StaffService>();
             services.AddTransient<StaffService.IStaffService, StaffService>();
-            
+
             services.AddTransient<IOperationTypeRepository, OperationTypeRepository>();
             services.AddTransient<OperationTypeService>();
 

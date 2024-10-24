@@ -162,7 +162,6 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
         public async Task<UserDto> GetUserByEmailAsync(string email) {
             var user = await _userRepo.GetByEmailAsync(email);
-            Console.WriteLine("\n\n--------\nuser->" + user.Email + "<-\n");
             if (user == null) {
                 throw new BusinessRuleValidationException("User not found");
             }
@@ -240,13 +239,12 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
             if (user.IsLockedOut) {
                 if (user.LockoutEnd.HasValue && user.LockoutEnd.Value <= DateTime.UtcNow) {
                     user.UnblockLogin();
-                    await _unitOfWork.CommitAsync();    
+                    await _unitOfWork.CommitAsync();
                 }
                 else {
                     throw new BusinessRuleValidationException("Your account is blocked. Try again in " +
                                                               user.LockoutEnd);
                 }
-                
             }
         }
 
@@ -258,6 +256,7 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
                 var emailList = adminList.Select(u => u.Email.Value).ToList();
                 await _emailService.SendAdminUserLockoutEmailAsync(emailList, user.Username.Value);
             }
+
             await _unitOfWork.CommitAsync();
         }
 
@@ -268,6 +267,25 @@ namespace Sem5Pi2425.Domain.SystemUserAggr {
 
         private bool VerifyPassword(string loginDtoPassword, string userPassword) {
             return loginDtoPassword.Equals(userPassword);
+        }
+
+        public async Task<bool> UserExistsByEmailAsync(string email) {
+            var exists = false;
+            try {
+                var user = await _userRepo.GetByEmailAsync(email);
+                if (user == null) {
+                    throw new BusinessRuleValidationException("Unkown error!");
+                }
+
+                exists = true;
+            }
+            catch (BusinessRuleValidationException e) {
+                if (e.Message.Equals("User not found")) {
+                    exists = false;
+                }
+            }
+
+            return exists;
         }
     }
 }

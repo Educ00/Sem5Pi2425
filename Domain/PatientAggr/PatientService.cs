@@ -338,18 +338,18 @@ public class PatientService {
 }
     
     public async Task<PatientDto> SignIn(RegisterPatientDto dto) {
-        var temp = _userRepository.GetByEmailAsync(dto.Email);
-        if (temp.Result != null) {
+        var temp = await _userRepository.GetByEmailAsync(dto.Email);
+        if (temp != null) {
             throw new BusinessRuleValidationException("Email already registed!");
         }
 
-        temp = _userRepository.GetByUsername(dto.Username);
-        if (temp.Result != null) {
+        temp = await _userRepository.GetByUsername(dto.Username);
+        if (temp != null) {
             throw new BusinessRuleValidationException("Username already taken!");
         }
 
-        temp = _userRepository.GetByPhoneNumber(dto.PhoneNumber);
-        if (temp.Result != null) {
+        temp = await _userRepository.GetByPhoneNumber(dto.PhoneNumber);
+        if (temp != null) {
             throw new BusinessRuleValidationException("PhoneNumber already taken!");
         }
 
