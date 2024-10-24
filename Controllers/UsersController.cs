@@ -399,6 +399,7 @@ namespace Sem5Pi2425.Controllers {
             }
         }
 
+        // GET: api/Users/logs
         [Authorize(Roles = "admin")]
         [HttpGet("logs")]
         public async Task<ActionResult<IEnumerable<LogDto>>> GetLogsAsync() {
@@ -406,7 +407,8 @@ namespace Sem5Pi2425.Controllers {
             return Ok(logs);
         }
 
-        // Add these methods to your UsersController
+
+        // GET: api/Users/signin-google
         [HttpGet("signin-google")]
         [AllowAnonymous]
         public IActionResult SignInGoogle() {
@@ -416,6 +418,7 @@ namespace Sem5Pi2425.Controllers {
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
+        // GET: api/Users/signin-google-callback
         [HttpGet("signin-google-callback")]
         [AllowAnonymous]
         public async Task<IActionResult> GoogleCallback() {
@@ -433,14 +436,12 @@ namespace Sem5Pi2425.Controllers {
                 return BadRequest("Invalid name ->" + name);
             }
 
-            // Check if user exists
             try {
                 UserDto existingUser = null;
                 if (await _userUserService.UserExistsByEmailAsync(email)) {
                     existingUser = await _userUserService.GetUserByEmailAsync(email);
                 }
                 if (existingUser != null) {
-                    // User exists, proceed with login
                     var claims = new List<Claim> {
                         new(ClaimTypes.Name, existingUser.Username),
                         new(ClaimTypes.Email, existingUser.Email),
@@ -461,18 +462,17 @@ namespace Sem5Pi2425.Controllers {
                     return Ok(new { Message = "Logged in successfully via Google", UserId = existingUser.Id.Value });
                 }
 
-                // Create new patient
                 var registerDto = new RegisterPatientDto(
                     username: email.Split('@')[0],
                     email: email,
                     fullName: "full name",
-                    phoneNumber: "966666666", // This could be collected later
-                    birthDate: DateTime.UtcNow.ToString("yyyy-MM-dd"), // Default value, could be updated later
-                    gender: "male", // Default value, could be updated later
-                    emergencyContactFullName: "full name", // Default to user's name, should be updated later
-                    emergencyContactEmail: email, // Default to user's email, should be updated later
-                    emergencyContactPhoneNumber: "966666666", // Should be updated later
-                    medicalConditions: "None" // Default value, should be updated later
+                    phoneNumber: "966666666",
+                    birthDate: DateTime.UtcNow.ToString("yyyy-MM-dd"),
+                    gender: "male",
+                    emergencyContactFullName: "full name",
+                    emergencyContactEmail: email,
+                    emergencyContactPhoneNumber: "966666666",
+                    medicalConditions: "None"
                 );
 
                 var patientDto = await _patientService.SignIn(registerDto);
