@@ -149,22 +149,20 @@ namespace Sem5Pi2425.Controllers {
 
                 await _patientService.ConfirmAccountDeletionByAdmin(user.Id.Value);
 
-                return Ok(new { 
+                return Ok(new
+                {
                     Message = "Patient deletion completed successfully",
-                    Details = new {
+                    Details = new
+                    {
                         PatientEmail = dto.Email,
                         DeletedAt = DateTime.UtcNow,
                         DeletedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                     }
                 });
             }
-            catch (BusinessRuleValidationException e)
+            catch(BusinessRuleValidationException e)
             {
                 return BadRequest(new { Message = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, new { Message = "An error occurred while processing the deletion request" });
             }
         }
         
@@ -172,8 +170,8 @@ namespace Sem5Pi2425.Controllers {
         [Authorize(Roles = "admin")]
         [HttpGet("admin/get-patients")]
         public async Task<ActionResult<object>> GetPatientProfiles(
-            [FromQuery] string? searchTerm,
-            [FromQuery] string? searchBy,
+            [FromQuery] string searchTerm,
+            [FromQuery] string searchBy,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
         {
@@ -282,9 +280,8 @@ namespace Sem5Pi2425.Controllers {
                 if (!loggedUser.Identity.IsAuthenticated) {
                     return Unauthorized();
                 }
-
                 var email = loggedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-                await _userUserService.RequestPasswordResetAsync(email);
+                await this._userUserService.RequestPasswordResetAsync(email);
                 return Ok("Password request sent to " + email);
             }
             catch (BusinessRuleValidationException e) {

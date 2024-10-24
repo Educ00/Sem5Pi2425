@@ -281,13 +281,13 @@ public class PatientService {
     }
     
     public async Task<(List<UserDto> Users, int TotalCount)> GetPatientProfilesAsync(
-    string? searchTerm = null, 
-    string? searchBy = null,
+    string searchTerm = null, 
+    string searchBy = null,
     int pageNumber = 1, 
     int pageSize = 10)
 {
     var users = await this._userRepository.GetAllAsync();
-    Console.WriteLine($"Total users found: {users.Count}"); // Debug log
+    Console.WriteLine($"Total users found: {users.Count}"); 
 
     foreach (var user in users)
     {
@@ -295,11 +295,11 @@ public class PatientService {
     }
 
     var patientUsers = users.Where(u => u.Role == Role.patient).ToList();
-    Console.WriteLine($"Patients found: {patientUsers.Count}"); // Debug log
+    Console.WriteLine($"Patients found: {patientUsers.Count}"); 
 
     if (!string.IsNullOrWhiteSpace(searchTerm))
     {
-        Console.WriteLine($"Searching for: {searchTerm} in {searchBy}"); // Debug log
+        Console.WriteLine($"Searching for: {searchTerm} in {searchBy}"); 
         patientUsers = searchBy?.ToLower() switch
         {
             "email" => patientUsers.Where(u => 
