@@ -14,8 +14,7 @@ using Type = Sem5Pi2425.Domain.LogAggr.Type;
 
 namespace Sem5Pi2425.Domain.OperationRequestAggr {
 
-    public class OperationRequestService
-    {
+    public class OperationRequestService : OperationRequestService.IOperationRequestService {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IOperationRequestRepository _repo;
         private readonly IAppointmentRepository _appointmentRepo;
@@ -36,6 +35,23 @@ namespace Sem5Pi2425.Domain.OperationRequestAggr {
             _staffRepo = staffRepository;
             _logService = logService;
         }
+        
+        public interface IOperationRequestService {
+            Task<List<OperationRequestDTO>> GetAllOperationRequestsAsync();
+            Task<ActionResult<OperationRequestDTO>> GetOperationRequestByIdAsync(OperationRequestId id);
+            Task<ActionResult<OperationRequestDTO>> AddOperationRequestAsync(CreateOperationRequestDto dto, string email);
+
+            Task<ActionResult<OperationRequestDTO>> DeleteOperationRequestAsync(OperationRequestId operationRequestId,
+                string email);
+
+            Task<ActionResult<OperationRequestDTO>> UpdateOperationRequestAsync(OperationRequestId id,
+                CreateOperationRequestDto dto, string email);
+
+            Task<List<OperationRequestDTO>> SearchOperationRequests(string patientUsername, string operationType,
+                int? priority);
+
+        }
+
         
         public async Task<List<OperationRequestDTO>> GetAllOperationRequestsAsync() {
             var list = await _repo.GetAllAsync();

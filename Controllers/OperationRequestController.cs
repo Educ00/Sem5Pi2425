@@ -13,10 +13,9 @@ namespace Sem5Pi2425.Controllers
     [ApiController]
     public class OperationRequestController : ControllerBase
     {
-        private readonly OperationRequestService _service;
+        private readonly OperationRequestService.IOperationRequestService _service;
         
-        
-        public OperationRequestController(OperationRequestService service) {
+        public OperationRequestController(OperationRequestService.IOperationRequestService service) {
             _service = service;
         }
         
