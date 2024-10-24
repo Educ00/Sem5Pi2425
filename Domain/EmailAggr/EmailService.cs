@@ -17,13 +17,17 @@ namespace Sem5Pi2425.Domain.EmailAggr {
         private readonly string _fromAddress;
 
         public EmailService(IConfiguration configuration) {
-            _configuration = configuration;
+            var builder = new ConfigurationBuilder()
+                .AddConfiguration(configuration)
+                .AddJsonFile("secrets.json", optional: false, reloadOnChange: true);
+            _configuration = builder.Build();
             _smtpHost = _configuration["Gmail:SmtpHost"];
             _smtpPort = int.Parse(_configuration["Gmail:Port"]);
             _username = _configuration["Gmail:Username"];
             _password = _configuration["Gmail:Password"];
             _fromAddress = _configuration["Gmail:FromAddress"];
-            _isConfigured = !string.IsNullOrEmpty(_smtpHost);
+            _isConfigured = !string.IsNullOrEmpty(_smtpHost) && !string.IsNullOrEmpty(_username) && !string.IsNullOrEmpty(_password) &&
+                            !string.IsNullOrEmpty(_fromAddress) && _smtpPort > 0; 
         }
 
         public async Task SendEmailAsync(string to, string from, string subject, string body) {
@@ -33,6 +37,8 @@ namespace Sem5Pi2425.Domain.EmailAggr {
             }
 
             var email = new MimeMessage();
+            Console.WriteLine("From->"+from);
+            Console.WriteLine("To->"+to);
             email.From.Add(MailboxAddress.Parse(from));
             email.To.Add(MailboxAddress.Parse(to));
             email.Subject = subject;
@@ -67,7 +73,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
             var activationLink = $"{_configuration["AppUrl"]}/api/Users/activate?token={activationToken}";
             var subject = "Activate Your Account";
             var body = GetActivationEmailTemplate(activationLink, activationToken);
-            var fromAddress = _configuration["Email:FromAddress"];
+            var fromAddress = _fromAddress;
 
             await SendEmailAsync(email, fromAddress, subject, body);
         }
@@ -75,7 +81,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
         public async Task SendConfirmationEmailAsync(string email) {
             var subject = "Account Activated Successfully";
             var body = GetConfirmationEmailTemplate();
-            var fromAddress = _configuration["Email:FromAddress"];
+            var fromAddress = _fromAddress;
 
             await SendEmailAsync(email, fromAddress, subject, body);
         }
@@ -86,7 +92,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
                 $"{_configuration["AppUrl"]}/api/Users/backoffice/reset-password?token={userPasswordRequestToken}";
             var subject = "Reset Your Password";
             var body = GetPasswordResetEmailTemplate(resetLink);
-            var fromAdress = _configuration["Email:FromAddress"];
+            var fromAdress = _fromAddress;
 
             await SendEmailAsync(emailValue, fromAdress, subject, body);
         }
@@ -107,7 +113,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
         public async Task SendWelcomeEmailAsync(string email) {
             var subject = "Welcome to Our Healthcare Application";
             var body = GetWelcomeEmailTemplate();
-            var fromAddress = _configuration["Email:FromAddress"];
+            var fromAddress = _fromAddress;
 
             await SendEmailAsync(email, fromAddress, subject, body);
         }
@@ -115,7 +121,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
         public async Task SendAccountDeletionConfirmationEmailAsync(string emailValue, string deletionToken) {
             var subject = "Confirm Account Deletion";
             var body = GetAccountDeletionConfirmationEmailTemplate(deletionToken);
-            var fromAddress = _configuration["Email:FromAddress"];
+            var fromAddress = _fromAddress;
 
             await SendEmailAsync(emailValue, fromAddress, subject, body);
         }
@@ -123,7 +129,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
         public async Task SendAccountDeletionCompletedEmailAsync(string email) {
             var subject = "Account Deletion Completed";
             var body = GetAccountDeletionCompletedEmailTemplate();
-            var fromAddress = _configuration["Email:FromAddress"];
+            var fromAddress = _fromAddress;
 
             await SendEmailAsync(email, fromAddress, subject, body);
         }
@@ -131,7 +137,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
         public async Task SendAdminUserLockoutEmailAsync(List<string> emailList, string blockedUsername) {
             var subject = $"User Account Locked: {blockedUsername}";
             var body = GetAdminUserLockoutEmailTemplate(blockedUsername);
-            var fromAddress = _configuration["Email:FromAddress"];
+            var fromAddress = _fromAddress;
 
             foreach (var adminEmail in emailList) {
                 try {
@@ -147,7 +153,7 @@ namespace Sem5Pi2425.Domain.EmailAggr {
         public async Task SendProfileChangedConfirmationEmailAsync(string emailValue) {
             var subject = "Profile Updated Confirmation";
             var body = GetProfileChangedConfirmationEmailTemplate();
-            var fromAddress = _configuration["Email:FromAddress"];
+            var fromAddress = _fromAddress;
 
             await SendEmailAsync(emailValue, fromAddress, subject, body);
         }
