@@ -165,24 +165,37 @@ namespace Sem5Pi2425.Controllers {
             [FromQuery] string searchTerm,
             [FromQuery] string searchBy,
             [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10) {
-            try {
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
                 if (pageNumber < 1) pageNumber = 1;
                 if (pageSize < 1) pageSize = 10;
                 if (pageSize > 50) pageSize = 50;
 
                 var (patients, totalCount) = await this._patientService.GetPatientProfilesAsync(
-                    searchTerm,
-                    searchBy,
+                    searchTerm?.Trim(),
+                    searchBy?.Trim().ToLower(),
                     pageNumber,
                     pageSize
                 );
 
                 var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-                return Ok(new {
-                    Data = patients ?? new List<UserDto>(),
-                    Pagination = new {
+                if (patients == null || patients.Count == 0)
+                {
+                    return Ok(new
+                    {
+                        Message = $"No patients found matching the search term: {searchTerm}",
+                        SearchInfo = new { SearchTerm = searchTerm, SearchBy = searchBy }
+                    });
+                }
+
+                return Ok(new
+                {
+                    Data = patients,
+                    Pagination = new
+                    {
                         CurrentPage = pageNumber,
                         PageSize = pageSize,
                         TotalCount = totalCount,
@@ -190,19 +203,17 @@ namespace Sem5Pi2425.Controllers {
                         HasPrevious = pageNumber > 1,
                         HasNext = pageNumber < totalPages
                     },
-                    SearchInfo = new {
+                    SearchInfo = new
+                    {
                         SearchTerm = searchTerm,
                         SearchBy = searchBy
-                    },
-                    Message = patients.Count == 0 ? "No matching records found" : null
+                    }
                 });
             }
-            catch (BusinessRuleValidationException e) {
-                return BadRequest(new { Message = e.Message });
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Error in GetPatientProfiles: {ex}"); // Debug log
-                return StatusCode(500, new { Message = "An error occurred while retrieving patient profiles" });
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPatientProfiles: {ex}");
+                return StatusCode(500, new { Message = "An error occurred while retrieving patient profiles", Error = ex.Message });
             }
         }
 

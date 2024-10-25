@@ -287,33 +287,43 @@ public class PatientService {
     int pageSize = 10)
 {
     var users = await this._userRepository.GetAllAsync();
-    Console.WriteLine($"Total users found: {users.Count}"); 
-
+    
+    Console.WriteLine($"Total users before filtering: {users.Count}");
     foreach (var user in users)
     {
-        Console.WriteLine($"User: {user.FullName}, Role: {user.Role}, Email: {user.Email}");
+        Console.WriteLine($"User found: Name={user.FullName.Value}, Role={user.Role}, Email={user.Email.Value}");
     }
 
     var patientUsers = users.Where(u => u.Role == Role.patient).ToList();
-    Console.WriteLine($"Patients found: {patientUsers.Count}"); 
+    Console.WriteLine($"Patient users found: {patientUsers.Count}");
 
     if (!string.IsNullOrWhiteSpace(searchTerm))
     {
-        Console.WriteLine($"Searching for: {searchTerm} in {searchBy}"); 
+        searchTerm = searchTerm.Trim().ToLower();
+        Console.WriteLine($"Searching for: '{searchTerm}' in '{searchBy}'");
+
         patientUsers = searchBy?.ToLower() switch
         {
             "email" => patientUsers.Where(u => 
-                u.Email.Value.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList(),
+                u.Email.Value.ToLower().Contains(searchTerm)).ToList(),
+                
             "name" => patientUsers.Where(u => 
-                u.FullName.Value.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList(),
+                u.FullName.Value.ToLower().Contains(searchTerm)).ToList(),
+                
             "phone" => patientUsers.Where(u => 
-                u.PhoneNumber.Value.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList(),
+                u.PhoneNumber.Value.ToLower().Contains(searchTerm)).ToList(),
+                
             _ => patientUsers.Where(u => 
-                u.Email.Value.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                u.FullName.Value.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                u.PhoneNumber.Value.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList()
+                u.Email.Value.ToLower().Contains(searchTerm) ||
+                u.FullName.Value.ToLower().Contains(searchTerm) ||
+                u.PhoneNumber.Value.ToLower().Contains(searchTerm)).ToList()
         };
-      
+
+        Console.WriteLine($"Patients found after search: {patientUsers.Count}");
+        foreach (var patient in patientUsers)
+        {
+            Console.WriteLine($"Found patient: {patient.FullName.Value}");
+        }
     }
 
     var totalCount = patientUsers.Count;
@@ -323,14 +333,13 @@ public class PatientService {
         .Take(pageSize)
         .ToList();
 
-
     var userDtos = paginatedUsers.Select(user => new UserDto(
         user.Id,
         user.Active,
-        user.Username.ToString(),
-        user.Email,
-        user.FullName.ToString(),
-        user.PhoneNumber.ToString(),
+        user.Username.Value,
+        user.Email.Value,
+        user.FullName.Value,
+        user.PhoneNumber.Value,
         user.Role.ToString()
     )).ToList();
 
